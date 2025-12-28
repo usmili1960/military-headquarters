@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>United States Military Headquarters - Washington DC</title>
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/homepage.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
+  <body class="homepage-body">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-left">
+        <div class="logo-container">
+          <img
+            src="../../images/USA_Legal_Affairs_Bureau_Logo_346fee20.png"
+            alt="USA Legal Affairs Bureau Logo"
+            class="bureau-logo"
+          />
+        </div>
+      </div>
+
+      <div class="header-center">
+        <h1 class="main-title" data-i18n="united-states-military-headquarters">
+          UNITED STATES MILITARY HEADQUARTERS
+        </h1>
+      </div>
+
+      <div class="header-right">
+        <!-- Language Switcher -->
+        <div class="language-switcher">
+          <button class="lang-btn" id="langBtn" title="Change Language">
+            <i class="fas fa-globe"></i>
+            <span>English</span>
+          </button>
+          <div class="lang-dropdown" id="langDropdown">
+            <button class="lang-option" data-lang="en">English</button>
+            <button class="lang-option" data-lang="ja">日本語 (Japanese)</button>
+            <button class="lang-option" data-lang="es">Español (Spanish)</button>
+            <button class="lang-option" data-lang="ko">한국어 (Korean)</button>
+          </div>
+        </div>
+
+        <!-- Login Icon -->
+        <button class="login-btn" id="loginBtn" title="Login">
+          <i class="fas fa-sign-in-alt"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Video Background Section -->
+    <div class="video-background-container">
+      <video class="homepage-video" id="homepageVideo" muted loop>
+        <source src="../../video/01.mp4" type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
+    </div>
+
+    <!-- Main Content -->
+    <main class="homepage-main">
+      <!-- Statistics Section -->
+      <section class="statistics-section">
+        <div class="stat-card">
+          <h3 data-i18n="total-active-personnel">Total Active Personnel</h3>
+          <p class="stat-number" data-i18n="1332370">1,332,370</p>
+        </div>
+        <div class="stat-card">
+          <h3 data-i18n="resignation-procedures">Resignation Procedures</h3>
+          <p class="stat-number" data-i18n="51456">51,456</p>
+        </div>
+        <div class="stat-card">
+          <h3 data-i18n="military-branches">Military Branches</h3>
+          <p class="stat-number" data-i18n="6">6</p>
+        </div>
+      </section>
+
+      <!-- Military Branches Grid -->
+      <section class="military-branches-section">
+        <h2 data-i18n="us-military-service-branches">United States Military Service Branches</h2>
+        <div class="branches-grid">
+          <div class="branch-card clickable" onclick="showBranchInfo('army')">
+            <img src="../../images/US_Army_Logo_9dc71205.png" alt="United States Army" />
+            <h3>United States Army</h3>
+          </div>
+
+          <div class="branch-card clickable" onclick="showBranchInfo('navy')">
+            <img src="../../images/US_Navy_Logo_31be0539.png" alt="United States Navy" />
+            <h3>United States Navy</h3>
+          </div>
+
+          <div class="branch-card clickable" onclick="showBranchInfo('airforce')">
+            <img src="../../images/US_Air_Force_Logo_26a074f2.png" alt="United States Air Force" />
+            <h3>United States Air Force</h3>
+          </div>
+
+          <div class="branch-card clickable" onclick="showBranchInfo('marines')">
+            <img
+              src="../../images/US_Marine_Corps_Logo_ecd85576.png"
+              alt="United States Marine Corps"
+            />
+            <h3>United States Marine Corps</h3>
+          </div>
+
+          <div class="branch-card clickable" onclick="showBranchInfo('coastguard')">
+            <img
+              src="../../images/US_Coast_Guard_Logo_e60d6ab9.png"
+              alt="United States Coast Guard"
+            />
+            <h3>United States Coast Guard</h3>
+          </div>
+
+          <div class="branch-card clickable" onclick="showBranchInfo('spaceforce')">
+            <img
+              src="../../images/US_Space_Force_Logo_5a67acd5.png"
+              alt="United States Space Force"
+            />
+            <h3>United States Space Force</h3>
+          </div>
+        </div>
+
+        <!-- Mobile Slideshow -->
+        <div class="mobile-slideshow">
+          <div class="slideshow-wrapper">
+            <div class="slides-container" id="branchSlidesContainer">
+              <div class="slide-item clickable" onclick="showBranchInfo('army')">
+                <img src="../../images/US_Army_Logo_9dc71205.png" alt="United States Army" />
+                <h3>United States Army</h3>
+              </div>
+              <div class="slide-item clickable" onclick="showBranchInfo('navy')">
+                <img src="../../images/US_Navy_Logo_31be0539.png" alt="United States Navy" />
+                <h3>United States Navy</h3>
+              </div>
+              <div class="slide-item clickable" onclick="showBranchInfo('airforce')">
+                <img
+                  src="../../images/US_Air_Force_Logo_26a074f2.png"
+                  alt="United States Air Force"
+                />
+                <h3>United States Air Force</h3>
+              </div>
+              <div class="slide-item clickable" onclick="showBranchInfo('marines')">
+                <img
+                  src="../../images/US_Marine_Corps_Logo_ecd85576.png"
+                  alt="United States Marine Corps"
+                />
+                <h3>United States Marine Corps</h3>
+              </div>
+              <div class="slide-item clickable" onclick="showBranchInfo('coastguard')">
+                <img
+                  src="../../images/US_Coast_Guard_Logo_e60d6ab9.png"
+                  alt="United States Coast Guard"
+                />
+                <h3>United States Coast Guard</h3>
+              </div>
+              <div class="slide-item clickable" onclick="showBranchInfo('spaceforce')">
+                <img
+                  src="../../images/US_Space_Force_Logo_5a67acd5.png"
+                  alt="United States Space Force"
+                />
+                <h3>United States Space Force</h3>
+              </div>
+            </div>
+          </div>
+          <div class="slide-dots" id="branchDots"></div>
+        </div>
+      </section>
+
+      <!-- About U.S. Military Section -->
+      <section class="about-section">
+        <h2 data-i18n="about-us-military">About the United States Military</h2>
+        <div class="about-content">
+          <p data-i18n="about-military-text">
+            The United States Armed Forces are the military forces of the United States. The armed
+            forces consist of the Army, Marine Corps, Navy, Air Force, Space Force, and Coast Guard.
+            The president of the United States is the commander-in-chief of the armed forces and
+            forms military policy with the Department of Defense and Department of Homeland
+            Security, both federal agencies.
+          </p>
+          <p data-i18n="about-military-text-2">
+            The primary concern of the armed forces is the defense and protection of the United
+            States and its citizens. Additional responsibilities include maintaining military
+            readiness, promoting national security interests, and providing humanitarian assistance
+            when needed.
+          </p>
+          <p data-i18n="about-military-text-3">
+            With over 1.3 million active-duty and reserve personnel, the U.S. Military maintains its
+            commitment to excellence, honor, and service to the nation.
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <!-- Login/Signup Modal -->
+    <div class="modal" id="loginModal">
+      <div class="modal-content login-modal">
+        <span class="close" id="closeLoginModal">&times;</span>
+        <!-- User Login Form -->
+        <div class="tab-content active" id="userLoginContent">
+          <h2 class="welcome-text" data-i18n="welcome-comrade">Welcome Comrade</h2>
+          <form id="userLoginForm" class="login-form">
+            <div class="form-group">
+              <label for="userMilID" data-i18n="military-id">Military ID (NSS-XXXXXX)</label>
+              <input
+                type="text"
+                id="userMilID"
+                name="militaryId"
+                placeholder="NSS-000000"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="userPassword" data-i18n="password">Password</label>
+              <input
+                type="password"
+                id="userPassword"
+                name="password"
+                required
+                autocomplete="current-password"
+              />
+            </div>
+            <button type="submit" class="btn btn-primary" data-i18n="login">Login</button>
+            <button
+              type="button"
+              class="btn btn-secondary"
+              id="userSignupBtn"
+              data-i18n="create-account"
+            >
+              Create Account
+            </button>
+            <button
+              type="button"
+              class="btn btn-tertiary"
+              id="forgotPasswordBtn"
+              data-i18n="forgotten-password"
+            >
+              Forgotten Password
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- User Signup Modal -->
+    <div class="modal" id="signupModal">
+      <div class="modal-content signup-modal">
+        <span class="close" id="closeSignupModal">&times;</span>
+        <h2 data-i18n="create-military-account">Create Military Account</h2>
+        <form id="userSignupForm" class="signup-form" enctype="multipart/form-data">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="signupEmail" data-i18n="email-address">Email Address</label>
+              <input type="email" id="signupEmail" name="email" required autocomplete="email" />
+            </div>
+            <div class="form-group">
+              <label for="signupMobile" data-i18n="mobile-number">Mobile Number</label>
+              <input type="tel" id="signupMobile" name="mobile" required autocomplete="tel" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="signupFullName" data-i18n="full-name">Full Name</label>
+              <input type="text" id="signupFullName" name="fullName" required autocomplete="name" />
+            </div>
+            <div class="form-group">
+              <label for="signupMilID" data-i18n="military-id">Military ID (NSS-XXXXXX)</label>
+              <input
+                type="text"
+                id="signupMilID"
+                name="militaryId"
+                placeholder="NSS-000000"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="signupDOB" data-i18n="date-of-birth">Date of Birth</label>
+              <input type="date" id="signupDOB" name="dob" required autocomplete="bday" />
+            </div>
+            <div class="form-group">
+              <label for="signupGender" data-i18n="gender">Gender</label>
+              <select id="signupGender" name="gender" required>
+                <option value="">Select Gender</option>
+                <option value="M">Male</option>
+                <option value="F">Female</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="signupRank">Rank</label>
+              <input
+                type="text"
+                id="signupRank"
+                name="rank"
+                placeholder="e.g., General, Colonel, Private"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="signupPassport" data-i18n="passport-picture">Passport Picture</label>
+              <input
+                type="file"
+                id="signupPassport"
+                name="passportPicture"
+                accept="image/*"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="signupPassword" data-i18n="password">Password</label>
+              <input
+                type="password"
+                id="signupPassword"
+                name="password"
+                required
+                autocomplete="new-password"
+              />
+            </div>
+            <div class="form-group">
+              <label for="signupConfirmPassword" data-i18n="confirm-password"
+                >Confirm Password</label
+              >
+              <input
+                type="password"
+                id="signupConfirmPassword"
+                name="confirmPassword"
+                required
+                autocomplete="new-password"
+              />
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary" data-i18n="proceed-to-verification">
+            Proceed to Verification
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Verification Code Modal -->
+    <div class="modal" id="verificationModal">
+      <div class="modal-content verification-modal">
+        <span class="close" id="closeVerificationModal">&times;</span>
+        <h2 data-i18n="verify-your-account">Verify Your Account</h2>
+        <p data-i18n="verification-code-sent">
+          A 6-digit verification code has been sent to your email/mobile number
+        </p>
+        <form id="verificationForm" class="verification-form">
+          <div class="form-group">
+            <label for="verificationCode" data-i18n="verification-code">Verification Code</label>
+            <input
+              type="text"
+              id="verificationCode"
+              name="verificationCode"
+              maxlength="6"
+              placeholder="000000"
+              required
+            />
+          </div>
+          <button type="submit" class="btn btn-primary" data-i18n="verify-account">
+            Verify Account
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Branch Information Modal -->
+    <div class="modal" id="branchModal">
+      <div class="modal-content branch-modal-content">
+        <span
+          class="close"
+          onclick="document.getElementById('branchModal').classList.remove('show'); document.getElementById('branchModal').style.display='none';"
+          >&times;</span
+        >
+        <div id="branchInfo"></div>
+      </div>
+    </div>
+
+    <!-- Forgot Password Modal -->
+    <div class="modal" id="forgotPasswordModal">
+      <div class="modal-content forgot-password-modal">
+        <span class="close" id="closeForgotPasswordModal">&times;</span>
+        <h2>Reset Your Password</h2>
+
+        <!-- Step 1: Enter Military ID -->
+        <div id="forgotPasswordStep1">
+          <p>Enter your Military ID to proceed with password reset</p>
+          <form id="forgotPasswordStep1Form" class="login-form">
+            <div class="form-group">
+              <label for="forgotMilID">Military ID (NSS-XXXXXX)</label>
+              <input
+                type="text"
+                id="forgotMilID"
+                name="militaryId"
+                placeholder="NSS-000000"
+                required
+              />
+            </div>
+            <button type="submit" class="btn btn-primary">Find Account</button>
+          </form>
+        </div>
+
+        <!-- Step 2: Send Verification Code -->
+        <div id="forgotPasswordStep2" class="hidden-display">
+          <p id="forgotPasswordStep2Message"></p>
+          <div id="emailSendingIndicator" class="center-text margin-v-20">
+            <p>Sending verification code to your email...</p>
+            <div class="progress-bar-container">
+              <div id="emailProgressBar" class="progress-bar-fill"></div>
+            </div>
+          </div>
+          <p class="center-text margin-top-20 text-muted small-text">
+            Not receiving the code? After 30 seconds you can request it via SMS instead.
+          </p>
+          <button
+            type="button"
+            id="toggleSmsBtn"
+            class="btn btn-secondary full-width margin-top-20 hidden-display"
+          >
+            Use SMS Instead
+          </button>
+          <div id="smsForm" class="hidden-display margin-top-20">
+            <p>Enter your phone number to receive the verification code via SMS:</p>
+            <div class="form-group">
+              <label for="forgotPhoneNumber">Phone Number</label>
+              <input
+                type="tel"
+                id="forgotPhoneNumber"
+                placeholder="Enter your phone number"
+                required
+              />
+            </div>
+            <button type="button" id="sendSmsBtn" class="btn btn-primary">Send Code via SMS</button>
+          </div>
+          <div id="manualCodeEntry" class="hidden-display margin-top-20">
+            <form id="forgotPasswordVerificationForm">
+              <div class="form-group">
+                <label for="forgotVerificationCode">Enter Verification Code</label>
+                <input
+                  type="text"
+                  id="forgotVerificationCode"
+                  maxlength="6"
+                  placeholder="000000"
+                  required
+                />
+              </div>
+              <button type="submit" class="btn btn-primary">Verify Code</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Step 3: Reset Password -->
+        <div id="forgotPasswordStep3" class="hidden-display">
+          <p>Create your new password</p>
+          <form id="resetPasswordForm" class="login-form">
+            <div class="form-group">
+              <label for="newPassword">New Password</label>
+              <input
+                type="password"
+                id="newPassword"
+                name="password"
+                required
+                autocomplete="new-password"
+              />
+            </div>
+            <div class="form-group">
+              <label for="confirmNewPassword">Confirm Password</label>
+              <input
+                type="password"
+                id="confirmNewPassword"
+                name="confirmPassword"
+                required
+                autocomplete="new-password"
+              />
+            </div>
+            <button type="submit" class="btn btn-primary">Reset Password</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <footer class="footer">
+      <p data-i18n="copyright">
+        &copy; 2025 United States Military Headquarters Washington DC. All rights reserved.
+      </p>
+    </footer>
+
+    <script src="../js/translations.js"></script>
+    <script src="../js/homepage.js"></script>
+  </body>
+</html>

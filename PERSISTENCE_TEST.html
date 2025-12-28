@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Military HQ - Persistence Test</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .header {
+        text-align: center;
+        color: white;
+        margin-bottom: 40px;
+        padding: 30px;
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 10px;
+        border-bottom: 3px solid #00d4ff;
+      }
+
+      .header h1 {
+        font-size: 2.5em;
+        margin-bottom: 10px;
+      }
+
+      .header p {
+        font-size: 1.2em;
+        opacity: 0.9;
+      }
+
+      .status-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        margin-bottom: 40px;
+      }
+
+      .status-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        border-left: 5px solid #4caf50;
+      }
+
+      .status-card.success {
+        border-left-color: #4caf50;
+        background: #f0fff4;
+      }
+
+      .status-card.warning {
+        border-left-color: #ff9800;
+        background: #fffbf0;
+      }
+
+      .status-card.error {
+        border-left-color: #f44336;
+        background: #fff5f5;
+      }
+
+      .status-card h3 {
+        margin-bottom: 10px;
+        font-size: 1.2em;
+      }
+
+      .status-badge {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 0.9em;
+        font-weight: bold;
+        margin-top: 10px;
+      }
+
+      .badge-success {
+        background: #4caf50;
+        color: white;
+      }
+
+      .badge-warning {
+        background: #ff9800;
+        color: white;
+      }
+
+      .badge-error {
+        background: #f44336;
+        color: white;
+      }
+
+      .test-section {
+        background: white;
+        border-radius: 10px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      }
+
+      .test-section h2 {
+        color: #1e3c72;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #2a5298;
+      }
+
+      .form-group {
+        margin-bottom: 15px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 5px;
+        color: #333;
+        font-weight: 500;
+      }
+
+      input,
+      select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 1em;
+      }
+
+      input:focus,
+      select:focus {
+        outline: none;
+        border-color: #2a5298;
+        box-shadow: 0 0 5px rgba(42, 82, 152, 0.3);
+      }
+
+      .button-group {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+      }
+
+      button {
+        flex: 1;
+        padding: 12px;
+        border: none;
+        border-radius: 5px;
+        font-size: 1em;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+
+      .btn-primary {
+        background: #2a5298;
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: #1e3c72;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      }
+
+      .btn-secondary {
+        background: #666;
+        color: white;
+      }
+
+      .btn-secondary:hover {
+        background: #444;
+      }
+
+      .btn-success {
+        background: #4caf50;
+        color: white;
+      }
+
+      .btn-success:hover {
+        background: #45a049;
+      }
+
+      .users-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+
+      .users-table th {
+        background: #2a5298;
+        color: white;
+        padding: 12px;
+        text-align: left;
+        font-weight: bold;
+      }
+
+      .users-table td {
+        padding: 12px;
+        border-bottom: 1px solid #ddd;
+      }
+
+      .users-table tr:hover {
+        background: #f5f5f5;
+      }
+
+      .status-active {
+        color: #4caf50;
+        font-weight: bold;
+      }
+
+      .status-inactive {
+        color: #f44336;
+        font-weight: bold;
+      }
+
+      .console-output {
+        background: #222;
+        color: #0f0;
+        padding: 15px;
+        border-radius: 5px;
+        font-family: 'Courier New', monospace;
+        margin-top: 15px;
+        max-height: 300px;
+        overflow-y: auto;
+        font-size: 0.9em;
+        line-height: 1.5;
+      }
+
+      .console-output .log {
+        margin: 3px 0;
+      }
+
+      .console-output .success {
+        color: #0f0;
+      }
+
+      .console-output .error {
+        color: #f00;
+      }
+
+      .console-output .warning {
+        color: #ff0;
+      }
+
+      .console-output .info {
+        color: #0ff;
+      }
+
+      .step-counter {
+        background: #2a5298;
+        color: white;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        margin-right: 10px;
+      }
+
+      .steps-list {
+        list-style: none;
+        padding: 0;
+      }
+
+      .steps-list li {
+        padding: 10px;
+        margin: 5px 0;
+        background: #f5f5f5;
+        border-left: 4px solid #2a5298;
+        border-radius: 5px;
+      }
+
+      .checkbox {
+        margin-right: 10px;
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      .tab-buttons {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #ddd;
+      }
+
+      .tab-button {
+        padding: 10px 20px;
+        background: none;
+        border: none;
+        border-bottom: 3px solid transparent;
+        color: #666;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+
+      .tab-button.active {
+        color: #2a5298;
+        border-bottom-color: #2a5298;
+      }
+
+      .tab-content {
+        display: none;
+      }
+
+      .tab-content.active {
+        display: block;
+      }
+
+      .user-count-display {
+        font-size: 2em;
+        font-weight: bold;
+        color: #2a5298;
+      }
+
+      .info-section-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+      }
+
+      .small-helper-text {
+        color: #666;
+      }
+
+      .form-description {
+        margin-bottom: 20px;
+        color: #666;
+      }
+
+      .success-highlight {
+        background: #4caf50;
+        color: white;
+        padding: 2px 5px;
+        border-radius: 3px;
+      }
+
+      .results-container {
+        margin-top: 20px;
+      }
+
+      .users-found-message {
+        color: #4caf50;
+        font-weight: bold;
+      }
+
+      .persistence-key-point {
+        margin-top: 15px;
+        padding: 10px;
+        background: #f0f9ff;
+        border-left: 3px solid #2a5298;
+        color: #1e3c72;
+      }
+
+      .clear-logs-button {
+        margin-top: 10px;
+      }
+
+      .persistence-test-button {
+        margin-top: 20px;
+        width: 100%;
+      }
+
+      .log-timestamp {
+        opacity: 0.6;
+      }
+
+      .success-message {
+        margin-top: 15px;
+        color: #4caf50;
+        font-weight: bold;
+      }
+
+      .next-step-message {
+        font-size: 0.9em;
+        color: #666;
+      }
+
+      .error-container {
+        margin-top: 10px;
+        font-size: 0.9em;
+      }
+
+      .steps-list-header {
+        margin-left: 20px;
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>🎖️ Military Headquarters - Persistence Test</h1>
+        <p>Verify User Registration & Data Persistence</p>
+      </div>
+
+      <!-- Status Dashboard -->
+      <div class="status-grid">
+        <div class="status-card success">
+          <h3>✅ Server Status</h3>
+          <p id="server-status">Connecting...</p>
+          <span class="status-badge badge-success" id="server-badge"></span>
+        </div>
+        <div class="status-card success">
+          <h3>📊 Total Users</h3>
+          <p id="user-count" class="user-count-display">0</p>
+          <span class="status-badge badge-success">Ready</span>
+        </div>
+        <div class="status-card success">
+          <h3>💾 Storage</h3>
+          <p>File-Based (users.json)</p>
+          <span class="status-badge badge-success">Active</span>
+        </div>
+      </div>
+
+      <!-- Tab Navigation -->
+      <div class="test-section">
+        <div class="tab-buttons">
+          <button class="tab-button active" onclick="showTab('test1')">Test 1: Registration</button>
+          <button class="tab-button" onclick="showTab('test2')">Test 2: Admin Panel</button>
+          <button class="tab-button" onclick="showTab('test3')">Test 3: Persistence</button>
+          <button class="tab-button" onclick="showTab('console')">Console Logs</button>
+        </div>
+
+        <!-- Test 1: Registration -->
+        <div id="test1" class="tab-content active">
+          <h2>Test 1️⃣ : User Registration</h2>
+          <p class="form-description">Register a new military user and verify data is saved.</p>
+
+          <form id="registerForm">
+            <div class="form-group">
+              <label>Full Name</label>
+              <input type="text" id="fullName" placeholder="e.g., John Doe" required />
+            </div>
+
+            <div class="form-group">
+              <label>Military ID (NSS-XXXXXX)</label>
+              <input
+                type="text"
+                id="militaryId"
+                placeholder="e.g., NSS-123456"
+                pattern="NSS-\d{6}"
+                required
+              />
+              <small class="small-helper-text"
+                >Format: NSS-123456 (NSS- followed by 6 digits)</small
+              >
+            </div>
+
+            <div class="form-group">
+              <label for="email">Email Address</label>
+              <input type="email" id="email" placeholder="e.g., user@military.gov" required />
+            </div>
+
+            <div class="form-group">
+              <label>Password</label>
+              <input type="password" id="password" placeholder="Enter password" required />
+            </div>
+
+            <div class="form-group">
+              <label for="rank">Rank</label>
+              <select id="rank" aria-label="Select Military Rank" required>
+                <option value="">Select Rank</option>
+                <option value="Private">Private</option>
+                <option value="Sergeant">Sergeant</option>
+                <option value="Lieutenant">Lieutenant</option>
+                <option value="Captain">Captain</option>
+                <option value="Major">Major</option>
+                <option value="Colonel">Colonel</option>
+                <option value="General">General</option>
+              </select>
+            </div>
+
+            <div class="button-group">
+              <button type="submit" class="btn-primary">🚀 Register User</button>
+              <button type="reset" class="btn-secondary">🔄 Clear Form</button>
+            </div>
+          </form>
+
+          <div id="registration-result"></div>
+        </div>
+
+        <!-- Test 2: Admin Panel -->
+        <div id="test2" class="tab-content">
+          <h2>Test 2️⃣ : Admin Panel Display</h2>
+          <p class="form-description">View all registered users in the admin panel.</p>
+
+          <button class="btn-primary" onclick="fetchAndDisplayUsers()">
+            📋 Load Users from Server
+          </button>
+
+          <div id="users-result" class="results-container"></div>
+        </div>
+
+        <!-- Test 3: Persistence -->
+        <div id="test3" class="tab-content">
+          <h2>Test 3️⃣ : Data Persistence Test</h2>
+          <p class="form-description">
+            <strong>🔑 THE KEY TEST:</strong> Register a user, view in admin panel, then refresh
+            this page. If the user still appears after refresh,
+            <strong>the persistence issue is SOLVED!</strong>
+          </p>
+
+          <div class="status-card success">
+            <h3>Step-by-Step Instructions</h3>
+            <ol class="steps-list">
+              <li>
+                <span class="step-counter">1</span>
+                <strong>Register User</strong> - Go to "Test 1: Registration" tab and register a
+                user
+              </li>
+              <li>
+                <span class="step-counter">2</span>
+                <strong>View Users</strong> - Go to "Test 2: Admin Panel" tab and load users
+              </li>
+              <li>
+                <span class="step-counter">3</span>
+                <strong>Refresh Page</strong> - Press F5 or Ctrl+R to refresh this page completely
+              </li>
+              <li>
+                <span class="step-counter">4</span>
+                <strong>Verify Persistence</strong> - Go back to "Test 2: Admin Panel" and load
+                users again
+              </li>
+              <li>
+                <span class="step-counter">5</span>
+                <strong>Confirm Success</strong> - If user still appears,
+                <span class="success-highlight">✅ PROBLEM SOLVED!</span>
+              </li>
+            </ol>
+          </div>
+
+          <button class="btn-success persistence-test-button" onclick="performPersistenceTest()">
+            ▶️ Start Persistence Test (Guide Me)
+          </button>
+        </div>
+
+        <!-- Console Logs -->
+        <div id="console" class="tab-content">
+          <h2>Console Logs 📝</h2>
+          <p class="form-description">View all API calls and system logs.</p>
+          <div class="console-output" id="console-logs">
+            <div class="log info">System ready. Logs will appear here...</div>
+          </div>
+          <button class="btn-secondary clear-logs-button" onclick="clearLogs()">
+            🗑️ Clear Logs
+          </button>
+        </div>
+      </div>
+
+      <!-- Information Section -->
+      <div class="test-section">
+        <h2>📚 How This Test Works</h2>
+        <div class="info-section-grid">
+          <div>
+            <h3>🎖️ Test 1: Registration</h3>
+            <p>Sends a POST request to `/api/auth/register`. The server saves the user to:</p>
+            <ul class="steps-list-header">
+              <li>Memory (RAM)</li>
+              <li>File (users.json)</li>
+            </ul>
+          </div>
+          <div>
+            <h3>👥 Test 2: Admin Panel</h3>
+            <p>Sends a GET request to `/api/admin/users`. The server:</p>
+            <ul class="steps-list-header">
+              <li>Reloads fresh data from file</li>
+              <li>Returns all registered users</li>
+              <li>Displays in table format</li>
+            </ul>
+          </div>
+          <div>
+            <h3>💾 Test 3: Persistence</h3>
+            <p>Tests the persistence fix:</p>
+            <ul class="steps-list-header">
+              <li>Register user</li>
+              <li>Refresh page (clears memory)</li>
+              <li>Load users (should still work)</li>
+              <li>User appears = Problem fixed!</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const API_BASE = 'http://localhost:3000';
+      const logs = [];
+
+      function log(type, message) {
+        const timestamp = new Date().toLocaleTimeString();
+        logs.push({ type, message, timestamp });
+        updateConsole();
+        console.log(`[${timestamp}] ${type}: ${message}`);
+      }
+
+      function updateConsole() {
+        const consoleDiv = document.getElementById('console-logs');
+        consoleDiv.innerHTML = logs
+          .map((log) => {
+            const typeClass = log.type.toLowerCase();
+            return `<div class="log ${typeClass}"><span class="log-timestamp">[${log.timestamp}]</span> <strong>${log.type}:</strong> ${log.message}</div>`;
+          })
+          .join('');
+        consoleDiv.scrollTop = consoleDiv.scrollHeight;
+      }
+
+      function clearLogs() {
+        logs.length = 0;
+        updateConsole();
+        log('info', 'Logs cleared');
+      }
+
+      function showTab(tabId) {
+        // Hide all tabs
+        document.querySelectorAll('.tab-content').forEach((tab) => tab.classList.remove('active'));
+        document.querySelectorAll('.tab-button').forEach((btn) => btn.classList.remove('active'));
+
+        // Show selected tab
+        document.getElementById(tabId).classList.add('active');
+        event.target.classList.add('active');
+
+        log('info', `Switched to tab: ${tabId}`);
+      }
+
+      // Check server status on load
+      async function checkServerStatus() {
+        try {
+          const response = await fetch(`${API_BASE}/api/admin/users`);
+          const users = await response.json();
+          document.getElementById('server-status').textContent =
+            '✅ Server is running on port 3000';
+          document.getElementById('server-badge').textContent = 'ONLINE';
+          document.getElementById('user-count').textContent = Array.isArray(users)
+            ? users.length
+            : 0;
+          log(
+            'success',
+            `Server is online. Total users: ${Array.isArray(users) ? users.length : 0}`
+          );
+        } catch (error) {
+          document.getElementById('server-status').textContent =
+            '❌ Server not responding. Make sure to start the server with: npm start';
+          document.getElementById('server-badge').textContent = 'OFFLINE';
+          log('error', `Server connection failed: ${error.message}`);
+        }
+      }
+
+      // Register user
+      document.getElementById('registerForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const data = {
+          fullName: document.getElementById('fullName').value,
+          militaryId: document.getElementById('militaryId').value,
+          email: document.getElementById('email').value,
+          password: document.getElementById('password').value,
+          rank: document.getElementById('rank').value,
+        };
+
+        log('info', `Registering user: ${data.fullName} (${data.militaryId})`);
+
+        try {
+          const response = await fetch(`${API_BASE}/api/auth/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+          });
+
+          const result = await response.json();
+
+          if (response.ok) {
+            log('success', `User registered successfully: ${data.fullName}`);
+            document.getElementById('registration-result').innerHTML = `
+                        <div class="status-card success">
+                            <h3>✅ Registration Successful!</h3>
+                            <p><strong>User:</strong> ${data.fullName}</p>
+                            <p><strong>Military ID:</strong> ${data.militaryId}</p>
+                            <p><strong>Email:</strong> ${data.email}</p>
+                            <p><strong>Rank:</strong> ${data.rank}</p>
+                            <p class="success-message">✅ User has been saved to users.json</p>
+                            <p class="next-step-message">Next: Go to "Test 2: Admin Panel" tab to view the registered user</p>
+                        </div>
+                    `;
+            document.getElementById('registerForm').reset();
+            checkServerStatus();
+          } else {
+            log('error', `Registration failed: ${result.message || result.error}`);
+            document.getElementById('registration-result').innerHTML = `
+                        <div class="status-card error">
+                            <h3>❌ Registration Failed</h3>
+                            <p>${result.message || result.error || 'Unknown error'}</p>
+                        </div>
+                    `;
+          }
+        } catch (error) {
+          log('error', `Network error: ${error.message}`);
+          document.getElementById('registration-result').innerHTML = `
+                    <div class="status-card error">
+                        <h3>❌ Error</h3>
+                        <p>Network error: ${error.message}</p>
+                        <p class="error-container">Make sure the server is running: npm start</p>
+                    </div>
+                `;
+        }
+      });
+
+      // Fetch and display users
+      async function fetchAndDisplayUsers() {
+        log('info', 'Fetching users from server...');
+
+        try {
+          const response = await fetch(`${API_BASE}/api/admin/users`);
+          const users = await response.json();
+
+          log('success', `Fetched ${users.length} users from server`);
+
+          let html = '';
+          if (users.length === 0) {
+            html =
+              '<p style="color: #ff9800;">No users found. Register a user first in Test 1.</p>';
+          } else {
+            html = `
+                        <div class="results-container">
+                            <p class="users-found-message">✅ ${
+                              users.length
+                            } user(s) found in database</p>
+                            <table class="users-table">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Military ID</th>
+                                        <th>Email</th>
+                                        <th>Rank</th>
+                                        <th>Status</th>
+                                        <th>Created</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${users
+                                      .map(
+                                        (user) => `
+                                        <tr>
+                                            <td>${user.fullName || 'N/A'}</td>
+                                            <td><strong>${user.militaryId || 'N/A'}</strong></td>
+                                            <td>${user.email || 'N/A'}</td>
+                                            <td>${user.rank || 'N/A'}</td>
+                                            <td><span class="status-${(
+                                              user.status || 'ACTIVE'
+                                            ).toLowerCase()}">${user.status || 'ACTIVE'}</span></td>
+                                            <td>${user.accountCreated || 'N/A'}</td>
+                                        </tr>
+                                    `
+                                      )
+                                      .join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                        <p class="persistence-key-point">
+                            <strong>🔑 KEY POINT:</strong> Press F5 to refresh this page. If users still appear, the persistence issue is <strong>FIXED!</strong>
+                        </p>
+                    `;
+          }
+
+          document.getElementById('users-result').innerHTML = html;
+        } catch (error) {
+          log('error', `Failed to fetch users: ${error.message}`);
+          document.getElementById('users-result').innerHTML = `
+                    <div class="status-card error">
+                        <h3>❌ Error Fetching Users</h3>
+                        <p>${error.message}</p>
+                        <p class="error-container">Make sure the server is running: npm start</p>
+                    </div>
+                `;
+        }
+      }
+
+      function performPersistenceTest() {
+        const message = `
+            🔄 PERSISTENCE TEST GUIDE:
+
+            1. Click OK to go to Test 1 (Registration)
+            2. Register a test user
+            3. Click OK to go to Test 2 (Admin Panel)
+            4. Load users (you should see your registered user)
+            5. Now REFRESH this page (press F5)
+            6. Come back to Test 2 and load users again
+            7. If user still appears → ✅ PERSISTENCE IS FIXED!
+
+            Ready? Click OK to start Test 1.
+            `;
+
+        alert(message);
+        showTab('test1');
+      }
+
+      // Initialize on page load
+      window.addEventListener('load', () => {
+        log('info', 'Test page loaded');
+        checkServerStatus();
+      });
+
+      // Refresh server status every 10 seconds
+      setInterval(checkServerStatus, 10000);
+    </script>
+  </body>
+</html>

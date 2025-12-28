@@ -1,0 +1,9 @@
+{
+  "rules": {
+    "inline-style-disabled": false,
+    "doctype-first": false,
+    "id-class-ad-disabled": false,
+    "attr-unsafe-chars": false,
+    "href-abs-or-rel": false
+  }
+}

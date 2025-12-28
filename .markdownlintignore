@@ -1,0 +1,5 @@
+# Ignore patterns for markdownlint
+
+node_modules/
+.git/
+*.min.md

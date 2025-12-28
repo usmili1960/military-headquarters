@@ -1,0 +1,72 @@
+{
+  "env": {
+    "browser": true,
+    "node": true,
+    "es2021": true
+  },
+  "extends": "airbnb-base",
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "module"
+  },
+  "rules": {
+    "no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_"
+      }
+    ],
+    "no-console": "off",
+    "no-restricted-globals": [
+      "error",
+      {
+        "name": "eval",
+        "message": "eval is a security risk"
+      },
+      {
+        "name": "setTimeout",
+        "message": "Use native Promise or setTimeout"
+      }
+    ],
+    "prefer-const": "error",
+    "no-plusplus": "warn",
+    "max-len": [
+      "warn",
+      {
+        "code": 100,
+        "ignoreUrls": true,
+        "ignoreStrings": true,
+        "ignoreTemplateLiterals": true
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["src/js/**/*.js"],
+      "env": {
+        "browser": true,
+        "node": false
+      },
+      "globals": {
+        "window": "readonly",
+        "document": "readonly",
+        "localStorage": "readonly",
+        "sessionStorage": "readonly",
+        "alert": "readonly",
+        "confirm": "readonly",
+        "prompt": "readonly",
+        "FileReader": "readonly",
+        "translations": "readonly",
+        "currentLanguage": "readonly"
+      }
+    },
+    {
+      "files": ["server/**/*.js"],
+      "env": {
+        "node": true,
+        "browser": false
+      }
+    }
+  ]
+}

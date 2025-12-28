@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Military Headquarters</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/admin-dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="admin-dashboard-body">
+    <!-- Header -->
+    <header class="admin-header">
+        <div class="header-left">
+            <h1>Admin Control Panel</h1>
+        </div>
+
+        <div class="header-right">
+            <!-- Language Switcher -->
+            <div class="language-switcher">
+                <button class="lang-btn" id="adminLangBtn" title="Change Language">
+                    <i class="fas fa-globe"></i>
+                    <span>English</span>
+                </button>
+                <div class="lang-dropdown hidden-display" id="adminLangDropdown">
+                    <button class="lang-option" data-lang="en">English</button>
+                    <button class="lang-option" data-lang="ja">日本語 (Japanese)</button>
+                    <button class="lang-option" data-lang="es">Español (Spanish)</button>
+                    <button class="lang-option" data-lang="ko">한국어 (Korean)</button>
+                </div>
+            </div>
+            
+            <div class="admin-menu">
+                <button class="menu-btn" id="adminMenuBtn" title="Admin Menu">
+                    <i class="fas fa-ellipsis-v"></i>
+                </button>
+                <div class="menu-dropdown hidden-display" id="adminMenuDropdown">
+                    <button class="menu-option" id="spouseEditOption">
+                        <i class="fas fa-users"></i>
+                        Spouse Edit
+                    </button>
+                    <button class="menu-option" id="userProceduresOption">
+                        <i class="fas fa-file-alt"></i>
+                        Users Procedures
+                    </button>
+                    <hr class="menu-separator">
+                    <button class="menu-option logout-danger" id="adminDropdownLogoutBtn">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+        <!-- Email Interface Section -->
+        <section class="email-section">
+            <div class="section-header">
+                <h2>Send Communications</h2>
+                <button class="btn btn-primary" id="composeEmailBtn">
+                    <i class="fas fa-envelope"></i>
+                    Compose Email
+                </button>
+            </div>
+        </section>
+
+        <!-- Users List Section -->
+        <section class="users-list-section">
+            <div class="section-header">
+                <h2>Military Personnel Database</h2>
+                <div class="search-bar">
+                    <input type="text" id="userSearch" placeholder="Search by name or Military ID...">
+                    <i class="fas fa-search"></i>
+                </div>
+            </div>
+
+            <div class="users-table-container">
+                <table class="users-table">
+                    <thead>
+                        <tr>
+                            <th>Profile Picture</th>
+                            <th>Full Name</th>
+                            <th>Military ID</th>
+                            <th>Rank</th>
+                            <th>Status</th>
+                            <th>Account Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <tr>
+                            <td colspan="7" class="table-empty-state">No users found</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- Compose Email Modal -->
+    <div class="modal" id="emailModal">
+        <div class="modal-content email-modal">
+            <span class="close" id="closeEmailModal">&times;</span>
+            <h2>Compose New Email</h2>
+            <form id="emailForm" class="email-form">
+                <div class="form-group">
+                    <label for="emailTo">User Email</label>
+                    <input type="email" id="emailTo" name="to" required>
+                </div>
+                <div class="form-group">
+                    <label for="emailSubject">Subject</label>
+                    <input type="text" id="emailSubject" name="subject" required>
+                </div>
+                <div class="form-group">
+                    <label for="emailBody">Message</label>
+                    <textarea id="emailBody" name="body" rows="6" required></textarea>
+                </div>
+                <div class="email-modal-footer">
+                    <button type="button" class="btn btn-secondary" id="cancelEmailBtn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Send Email</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- User Detail Modal -->
+    <div class="modal" id="userDetailModal">
+        <div class="modal-content user-detail-modal">
+            <span class="close" id="closeUserDetailModal">&times;</span>
+            <div class="user-detail-header">
+                <div class="user-picture-container">
+                    <img id="userDetailPicture" src="../assets/default-avatar.png" alt="User Picture" class="user-detail-picture">
+                    <div class="photo-approval-section hidden-display" id="photoApprovalSection">
+                        <p id="photoStatusLabel" class="photo-status-text">Pending Approval</p>
+                        <div class="photo-action-buttons">
+                            <button class="btn btn-success" id="approvePhotoBtn" title="Approve">
+                                <i class="fas fa-check"></i> Approve
+                            </button>
+                            <button class="btn btn-danger" id="rejectPhotoBtn" title="Reject">
+                                <i class="fas fa-times"></i> Reject
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="user-detail-info">
+                    <h2 id="userDetailName">User Name</h2>
+                    <p id="userDetailMilID">NSS-000000</p>
+                </div>
+                <button class="edit-btn" id="editUserBtn" title="Edit User">
+                    <i class="fas fa-edit"></i>
+                </button>
+            </div>
+
+            <div class="user-detail-content">
+                <div class="detail-section">
+                    <h3>Personal Information</h3>
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <label>Email</label>
+                            <p id="userDetailEmail">-</p>
+                        </div>
+                        <div class="detail-item">
+                            <label>Mobile Number</label>
+                            <p id="userDetailMobile">-</p>
+                        </div>
+                        <div class="detail-item">
+                            <label>Date of Birth</label>
+                            <p id="userDetailDOB">-</p>
+                        </div>
+                        <div class="detail-item">
+                            <label>Rank</label>
+                            <p id="userDetailRank">-</p>
+                        </div>
+                        <div class="detail-item">
+                            <label>Account Created</label>
+                            <p id="userDetailCreated">-</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3>Status Management</h3>
+                    <div class="status-control">
+                        <label for="userStatusToggle">Account Status</label>
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="userStatusToggle" class="status-toggle">
+                            <label for="userStatusToggle" class="toggle-label">
+                                <span id="statusLabel">ACTIVE</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3>Procedures</h3>
+                    <form id="procedureForm" class="procedure-form">
+                        <div class="form-group">
+                            <label for="procedureName">Procedure Name</label>
+                            <input type="text" id="procedureName" name="procedureName" placeholder="Enter procedure name">
+                        </div>
+                        <div class="form-group">
+                            <label for="procedureRequirements">Requirements</label>
+                            <textarea id="procedureRequirements" name="procedureRequirements" rows="4" placeholder="Enter procedure requirements"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Add Procedure</button>
+                    </form>
+                    
+                    <!-- User Procedures List -->
+                    <div class="procedures-list procedures-section" id="proceduresList">
+                        <h4>Current Procedures</h4>
+                        <div id="proceduresContainer" class="procedures-container">
+                            <p class="no-procedures-msg">No procedures yet</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="user-detail-footer">
+                <button type="button" class="btn btn-danger hidden-display" id="deleteUserBtn">
+                    <i class="fas fa-trash"></i> Delete User
+                </button>
+                <button type="button" class="btn btn-secondary" id="closeUserDetailBtn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Spouse Edit Modal -->
+    <div class="modal" id="spouseEditModal">
+        <div class="modal-content spouse-edit-modal">
+            <span class="close" id="closeSpouseEditModal">&times;</span>
+            <h2>Spouse Information Management</h2>
+
+            <div class="search-bar">
+                <input type="text" id="spouseSearch" placeholder="Search users...">
+                <i class="fas fa-search"></i>
+            </div>
+
+            <div class="spouse-users-list" id="spouseUsersList">
+                <!-- Users will be populated here -->
+            </div>
+
+            <div class="spouse-edit-form hidden-display" id="spouseEditForm">
+                <h3>Edit Spouse Information</h3>
+                <button class="btn btn-secondary" id="backToSpouseListBtn">Back to List</button>
+                
+                <form id="spouseAdminForm">
+                    <div class="form-group">
+                        <label for="adminSpousePassport">Passport Picture</label>
+                        <input type="file" id="adminSpousePassport" accept="image/*">
+                        <div class="passport-preview" id="adminSpousePassportPreview"></div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="adminSpouseFullName">Full Name</label>
+                            <input type="text" id="adminSpouseFullName" name="fullName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="adminSpouseMobile">Mobile Number</label>
+                            <input type="tel" id="adminSpouseMobile" name="mobile" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="adminSpouseDOB">Date of Birth</label>
+                            <input type="date" id="adminSpouseDOB" name="dob" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="adminSpouseOccupation">Occupation</label>
+                            <input type="text" id="adminSpouseOccupation" name="occupation" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="adminSpouseAddress">Full Address</label>
+                            <input type="text" id="adminSpouseAddress" name="address" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="adminSpouseEmail">Email Address</label>
+                            <input type="email" id="adminSpouseEmail" name="email" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Save Spouse Information</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Procedures Modal -->
+    <div class="modal" id="userProceduresModal">
+        <div class="modal-content user-procedures-modal">
+            <span class="close" id="closeUserProceduresModal">&times;</span>
+            <h2>Manage User Procedures</h2>
+
+            <div class="search-bar">
+                <input type="text" id="procedureUserSearch" placeholder="Search users...">
+                <i class="fas fa-search"></i>
+            </div>
+
+            <div class="procedure-users-list" id="procedureUsersList">
+                <!-- Users will be populated here -->
+            </div>
+
+            <div class="procedure-form-container hidden-display" id="procedureFormContainer">
+                <h3>Add Procedure for User</h3>
+                <button class="btn btn-secondary" id="backToProcedureListBtn">Back to List</button>
+
+                <form id="adminProcedureForm">
+                    <div class="form-group">
+                        <label for="procUserName">User Name</label>
+                        <input type="text" id="procUserName" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="procProcedureName">Procedure Name</label>
+                        <input type="text" id="procProcedureName" name="procedureName" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="procStatus">Status</label>
+                        <select id="procStatus" name="status" required>
+                            <option value="Pending">Pending</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Completed">Completed</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="procRequirements">Requirements</label>
+                        <textarea id="procRequirements" name="requirements" rows="4" required></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Submit Procedure</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logout Confirmation Modal -->
+    <div class="modal" id="adminLogoutModal">
+        <div class="modal-content logout-modal">
+            <h2>Confirm Logout</h2>
+            <p>Are you sure you want to logout from the Admin Panel?</p>
+            <div class="logout-buttons">
+                <button class="btn btn-primary" id="confirmAdminLogoutBtn">YES</button>
+                <button class="btn btn-secondary" id="cancelAdminLogoutBtn">NO</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="admin-footer">
+    </footer>
+
+    <script src="../js/translations.js"></script>
+    <script src="../js/admin-dashboard.js"></script>
+</body>
+</html>

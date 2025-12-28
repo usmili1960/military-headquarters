@@ -1,0 +1,80 @@
+version: '3.8'
+
+services:
+  # Express.js Backend
+  backend:
+    build: .
+    container_name: military-hq-backend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - MONGODB_URI=mongodb://mongodb:27017/military-hq
+      - JWT_SECRET=your-secret-key-change-in-production
+    volumes:
+      - ./server:/app/server
+      - ./src:/app/src
+      - ./users.json:/app/server/users.json
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+    networks:
+      - military-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # MongoDB Database
+  mongodb:
+    image: mongo:6.0
+    container_name: military-hq-mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=admin123
+      - MONGO_INITDB_DATABASE=military-hq
+    volumes:
+      - mongodb-data:/data/db
+      - mongodb-config:/data/configdb
+    restart: unless-stopped
+    networks:
+      - military-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+
+  # MongoDB Express (Optional Web UI for MongoDB)
+  mongo-express:
+    image: mongo-express:latest
+    container_name: military-hq-mongo-express
+    ports:
+      - "8081:8081"
+    environment:
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=admin
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=admin123
+      - ME_CONFIG_MONGODB_URL=mongodb://admin:admin123@mongodb:27017/
+      - ME_CONFIG_BASICAUTH_USERNAME=admin
+      - ME_CONFIG_BASICAUTH_PASSWORD=admin123
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+    networks:
+      - military-network
+
+volumes:
+  mongodb-data:
+    driver: local
+  mongodb-config:
+    driver: local
+
+networks:
+  military-network:
+    driver: bridge

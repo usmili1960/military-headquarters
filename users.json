@@ -1,0 +1,65 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "fullName": "John Michael Smith",
+      "militaryId": "NSS-123456",
+      "email": "john.smith@military.gov",
+      "mobile": "+1-555-0123",
+      "dob": "1990-05-15",
+      "rank": "General",
+      "password": "password123",
+      "passportPicture": "../assets/default-avatar.png",
+      "status": "ACTIVE",
+      "photoStatus": "approved",
+      "accountCreated": "2024-01-15",
+      "procedures": []
+    },
+    {
+      "id": 2,
+      "fullName": "Sarah Elizabeth Johnson",
+      "militaryId": "NSS-234567",
+      "email": "sarah.johnson@military.gov",
+      "mobile": "+1-555-0124",
+      "dob": "1988-03-22",
+      "rank": "Colonel",
+      "password": "password123",
+      "passportPicture": "../assets/default-avatar.png",
+      "status": "ACTIVE",
+      "photoStatus": "approved",
+      "accountCreated": "2024-01-20",
+      "procedures": []
+    },
+    {
+      "id": 3,
+      "fullName": "David Robert Williams",
+      "militaryId": "NSS-345678",
+      "email": "david.williams@military.gov",
+      "mobile": "+1-555-0125",
+      "dob": "1995-07-10",
+      "rank": "Private",
+      "password": "password123",
+      "passportPicture": "../assets/default-avatar.png",
+      "status": "INACTIVE",
+      "photoStatus": "approved",
+      "accountCreated": "2024-02-01",
+      "procedures": []
+    },
+    {
+      "id": 4,
+      "fullName": "Test User",
+      "militaryId": "NSS-987654",
+      "email": "test.user@military.gov",
+      "mobile": "+1-555-0199",
+      "dob": "1992-11-20",
+      "rank": "Sergeant",
+      "password": "password123",
+      "passportPicture": "../assets/default-avatar.png",
+      "status": "ACTIVE",
+      "photoStatus": "approved",
+      "accountCreated": "2024-12-24",
+      "procedures": []
+    }
+  ],
+  "nextUserId": 5
+}
