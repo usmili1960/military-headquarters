@@ -1,3 +1,4 @@
+/* global window, document, localStorage */
 // User Dashboard JavaScript
 
 // Get current user from localStorage or redirect to login

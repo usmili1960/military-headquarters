@@ -21,6 +21,9 @@ module.exports = {
     'no-param-reassign': ['error', { props: false }],
     'func-names': 'off',
     'object-shorthand': 'warn',
-    'class-methods-use-this': 'off'
+    'class-methods-use-this': 'off',
+    'no-alert': 'off',
+    'no-plusplus': 'off',
+    'arrow-body-style': 'off'
   }
 };

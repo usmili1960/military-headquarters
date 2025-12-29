@@ -34,9 +34,7 @@ const connectMongoDB = async () => {
 };
 
 // Initialize MongoDB connection (non-blocking, completely silent)
-let mongoConnected = false;
-connectMongoDB().then((success) => {
-  mongoConnected = success;
+connectMongoDB().then((_success) => {
   // Silent initialization - file storage is default
 }).catch(() => {
   // Catch any promise rejections silently

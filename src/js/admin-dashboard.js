@@ -1,5 +1,5 @@
 /* eslint-disable no-undef, no-use-before-define, no-restricted-globals */
-/* global window, document, localStorage, sessionStorage, alert, confirm, prompt */
+/* global window, document, localStorage, alert */
 
 // Admin Dashboard JavaScript
 

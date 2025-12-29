@@ -1,5 +1,5 @@
-/* eslint-disable no-undef, no-use-before-define, no-restricted-globals */
-/* global window, document, localStorage, sessionStorage, alert, confirm, prompt, FileReader */
+/* eslint-disable no-undef, no-use-before-define */
+/* global window, document, localStorage, sessionStorage, alert, FileReader */
 
 // Homepage JavaScript
 
@@ -209,7 +209,11 @@ userSignupForm.addEventListener('submit', (e) => {
   }
 
   // Insert after the message
-  verificationMessage.parentElement.insertBefore(verificationCodeDisplay, verificationMessage.nextElementSibling);
+  const msgParent = verificationMessage.parentElement;
+  msgParent.insertBefore(
+    verificationCodeDisplay,
+    verificationMessage.nextElementSibling
+  );
   verificationCodeDisplay.className = 'verification-code-display';
 });
 
@@ -299,7 +303,7 @@ verificationForm.addEventListener('submit', (e) => {
           try {
             const data = JSON.parse(text);
             throw new Error(data.error || `HTTP ${response.status}: ${response.statusText}`);
-          } catch (e) {
+          } catch (parseErr) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
           }
         });
@@ -514,7 +518,7 @@ document.getElementById('forgotPasswordStep1Form').addEventListener('submit', (e
       }
       throw new Error('User not found');
     })
-    .catch((error) => {
+    .catch((_lookupErr) => {
       console.log('Backend lookup error, checking localStorage...');
       // Fallback to localStorage
       const usersStr = localStorage.getItem('militaryUsers');
@@ -715,17 +719,17 @@ function showSlide(n) {
     currentSlideIndex = slides.length;
   }
 
-  for (let i = 0; i < slides.length; i++) {
+  for (let i = 0; i < slides.length; i += 1) {
     slides[i].classList.remove('fade');
   }
-  for (let i = 0; i < dots.length; i++) {
+  for (let i = 0; i < dots.length; i += 1) {
     dots[i].classList.remove('active');
   }
 
-  const currentSlide = slides[currentSlideIndex - 1];
+  const currentSlideElement = slides[currentSlideIndex - 1];
   const currentDot = dots[currentSlideIndex - 1];
 
-  if (currentSlide) currentSlide.classList.add('fade');
+  if (currentSlideElement) currentSlideElement.classList.add('fade');
   if (currentDot) currentDot.classList.add('active');
 }
 

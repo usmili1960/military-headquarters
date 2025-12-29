@@ -1,3 +1,4 @@
+/* global window, document, localStorage */
 // Translation Dictionary
 const translations = {
   en: {
