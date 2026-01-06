@@ -15,6 +15,20 @@ let cancelLogoutBtn = null;
 let goBackBtn = null;
 let spouseForm = null;
 
+// Translate page based on current language
+function translatePage() {
+  if (typeof translations === 'undefined') {
+    console.warn('⚠️ Translations not available');
+    return;
+  }
+  document.querySelectorAll('[data-i18n]').forEach((element) => {
+    const key = element.getAttribute('data-i18n');
+    if (translations[currentLanguage] && translations[currentLanguage][key]) {
+      element.textContent = translations[currentLanguage][key];
+    }
+  });
+}
+
 // Load language from localStorage or default to English
 function loadSavedLanguage() {
   const savedLanguage = localStorage.getItem('selectedLanguage');
@@ -35,20 +49,6 @@ function setupLanguageSwitcher() {
       translatePage();
     });
   }
-}
-
-// Translate page based on current language
-function translatePage() {
-  if (typeof translations === 'undefined') {
-    console.warn('⚠️ Translations not available');
-    return;
-  }
-  document.querySelectorAll('[data-i18n]').forEach((element) => {
-    const key = element.getAttribute('data-i18n');
-    if (translations[currentLanguage] && translations[currentLanguage][key]) {
-      element.textContent = translations[currentLanguage][key];
-    }
-  });
 }
 
 // Load user profile data - Declare before usage
@@ -101,23 +101,6 @@ function loadProcedures() {
   }
 
   console.log('✅ Procedures loaded');
-}
-
-// Initialize DOM elements after page loads
-function initializeElements() {
-  spouseModal = document.getElementById('spouseModal');
-  logoutModal = document.getElementById('logoutModal');
-  closeSpouseModal = document.getElementById('closeSpouseModal');
-  logoutBtn = document.getElementById('logoutBtn');
-  confirmLogoutBtn = document.getElementById('confirmLogoutBtn');
-  cancelLogoutBtn = document.getElementById('cancelLogoutBtn');
-  goBackBtn = document.getElementById('goBackBtn');
-  spouseForm = document.getElementById('spouseForm');
-
-  console.log('✅ DOM elements initialized');
-
-  // Attach event listeners after elements are found
-  attachEventListeners();
 }
 
 // Attach event listeners - Declare before usage
@@ -230,6 +213,23 @@ function attachEventListeners() {
       }
     });
   }
+}
+
+// Initialize DOM elements after page loads
+function initializeElements() {
+  spouseModal = document.getElementById('spouseModal');
+  logoutModal = document.getElementById('logoutModal');
+  closeSpouseModal = document.getElementById('closeSpouseModal');
+  logoutBtn = document.getElementById('logoutBtn');
+  confirmLogoutBtn = document.getElementById('confirmLogoutBtn');
+  cancelLogoutBtn = document.getElementById('cancelLogoutBtn');
+  goBackBtn = document.getElementById('goBackBtn');
+  spouseForm = document.getElementById('spouseForm');
+
+  console.log('✅ DOM elements initialized');
+
+  // Attach event listeners after elements are found
+  attachEventListeners();
 }
 
 window.addEventListener('load', () => {
