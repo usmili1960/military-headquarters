@@ -116,8 +116,19 @@ app.post('/api/auth/register', (req, res) => {
   try {
     console.log('📥 Registration request received. Body:', JSON.stringify(req.body, null, 2));
 
-    let {
-      email, mobile, fullName, militaryId, dob, rank, password, status, photoStatus, accountCreated, procedures, passportPicture,
+    const {
+      email,
+      mobile,
+      fullName,
+      militaryId,
+      dob,
+      rank,
+      password,
+      status,
+      photoStatus,
+      accountCreated,
+      procedures,
+      passportPicture,
     } = req.body;
 
     // Validate required fields
@@ -129,34 +140,34 @@ app.post('/api/auth/register', (req, res) => {
     }
 
     // Trim values
-    militaryId = militaryId.trim();
-    email = email.trim();
-    fullName = fullName.trim();
+    const trimmedMilitaryId = militaryId.trim();
+    const trimmedEmail = email.trim();
+    const trimmedFullName = fullName.trim();
 
     console.log('📝 Registration attempt:', {
-      email, fullName, militaryId, rank,
+      email: trimmedEmail, fullName: trimmedFullName, militaryId: trimmedMilitaryId, rank,
     });
 
     // Validate Military ID format
-    if (!militaryId.match(/^NSS-\d{6}$/)) {
-      console.log('❌ Invalid Military ID format:', militaryId);
+    if (!trimmedMilitaryId.match(/^NSS-\d{6}$/)) {
+      console.log('❌ Invalid Military ID format:', trimmedMilitaryId);
       return res.status(400).json({ success: false, error: 'Invalid Military ID format' });
     }
 
     // Check if user already exists (case-insensitive email check)
-    const existingUser = users.find((u) => u.militaryId === militaryId
-            || (u.email && u.email.toLowerCase() === email.toLowerCase()));
+    const existingUser = users.find((u) => u.militaryId === trimmedMilitaryId
+            || (u.email && u.email.toLowerCase() === trimmedEmail.toLowerCase()));
     if (existingUser) {
-      console.log('❌ User already exists:', { militaryId, email, existingMilId: existingUser.militaryId });
+      console.log('❌ User already exists:', { militaryId: trimmedMilitaryId, email: trimmedEmail, existingMilId: existingUser.militaryId });
       return res.status(400).json({ success: false, error: 'User with this Military ID or email already exists' });
     }
 
     // Create new user
     const newUser = {
       id: nextUserId++,
-      fullName,
-      militaryId,
-      email,
+      fullName: trimmedFullName,
+      militaryId: trimmedMilitaryId,
+      email: trimmedEmail,
       mobile: mobile || '',
       dob: dob || '',
       rank: rank || 'Enlisted',
@@ -192,7 +203,7 @@ app.post('/api/auth/register', (req, res) => {
     });
     console.log('📊 All users in system:', users.map((u) => ({ id: u.id, militaryId: u.militaryId, email: u.email })));
 
-    res.json({
+    return res.json({
       success: true,
       message: 'User registered successfully',
       user: {
@@ -206,7 +217,7 @@ app.post('/api/auth/register', (req, res) => {
   } catch (error) {
     console.error('❌ Registration error:', error);
     console.error('Error stack:', error.stack);
-    res.status(500).json({ success: false, error: `Registration failed: ${error.message}` });
+    return res.status(500).json({ success: false, error: `Registration failed: ${error.message}` });
   }
 });
 
@@ -240,13 +251,13 @@ app.post('/api/auth/send-verification-code', (req, res) => {
     console.log(`   Phone: ${phone}`);
     console.log(`   Code: ${code}`);
 
-    res.json({
+    return res.json({
       success: true,
       message: `Verification code has been sent to ${email} and ${phone}`,
       sentTo: { email, phone },
     });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to send verification code' });
+    return res.status(500).json({ error: 'Failed to send verification code' });
   }
 });
 
@@ -260,19 +271,20 @@ app.post('/api/auth/verify', (req, res) => {
       return res.status(400).json({ error: 'Invalid verification code' });
     }
 
-    res.json({ success: true, message: 'Account verified successfully' });
+    return res.json({ success: true, message: 'Account verified successfully' });
   } catch (error) {
-    res.status(500).json({ error: 'Verification failed' });
+    return res.status(500).json({ error: 'Verification failed' });
   }
 });
 
 // User Login
 app.post('/api/auth/login', (req, res) => {
   try {
-    let { militaryId, password } = req.body;
+    const { militaryId: rawMilitaryId, password: rawPassword } = req.body;
 
     // Trim military ID
-    militaryId = militaryId ? militaryId.trim() : '';
+    const militaryId = rawMilitaryId ? rawMilitaryId.trim() : '';
+    const password = rawPassword || '';
 
     console.log('🔐 Login attempt:', { militaryId, passwordLength: password ? password.length : 0 });
     console.log('📊 Total users in database:', users.length);
@@ -292,13 +304,13 @@ app.post('/api/auth/login', (req, res) => {
     }
 
     console.log('✅ User found:', { fullName: user.fullName, militaryId: user.militaryId });
-    console.log('� Password provided:', password ? 'yes' : 'no');
+    console.log('✅ Password provided:', password ? 'yes' : 'no');
 
     // For development: accept login with any password if military ID exists
     // In production, use proper bcrypt password verification
     console.log('✅ User login successful:', militaryId);
 
-    res.json({
+    return res.json({
       success: true,
       message: 'Login successful',
       token: `user_token_${Math.random().toString(36).substr(2, 9)}`,
@@ -319,25 +331,25 @@ app.post('/api/auth/login', (req, res) => {
     });
   } catch (error) {
     console.error('❌ Login error:', error);
-    res.status(500).json({ success: false, error: 'Login failed' });
+    return res.status(500).json({ success: false, error: 'Login failed' });
   }
 });
 
 // Admin Login
 app.post('/api/auth/admin-login', (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email } = req.body;
 
     // Here you would typically authenticate against database
     console.log('Admin login attempt:', email);
 
-    res.json({
+    return res.json({
       success: true,
       token: `admin_token_${Math.random().toString(36).substr(2, 9)}`,
       redirectTo: '/admin-dashboard.html',
     });
   } catch (error) {
-    res.status(500).json({ error: 'Admin login failed' });
+    return res.status(500).json({ error: 'Admin login failed' });
   }
 });
 
@@ -350,9 +362,9 @@ app.get('/api/user/:militaryId', (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    res.json(user);
+    return res.json(user);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch user profile' });
+    return res.status(500).json({ error: 'Failed to fetch user profile' });
   }
 });
 
@@ -378,13 +390,13 @@ app.post('/api/user/:militaryId/reset-password', (req, res) => {
 
     console.log('✅ Password reset successfully for user:', militaryId);
 
-    res.json({
+    return res.json({
       success: true,
       message: 'Password has been reset successfully',
     });
   } catch (error) {
     console.error('❌ Password reset error:', error);
-    res.status(500).json({ success: false, error: 'Failed to reset password' });
+    return res.status(500).json({ success: false, error: 'Failed to reset password' });
   }
 });
 
@@ -403,13 +415,13 @@ app.put('/api/user/:militaryId', (req, res) => {
     // Save to persistent storage
     saveUsers({ users, nextUserId });
 
-    res.json({
+    return res.json({
       success: true,
       message: 'Profile updated successfully',
       user,
     });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to update profile' });
+    return res.status(500).json({ error: 'Failed to update profile' });
   }
 });
 
@@ -445,13 +457,13 @@ app.post('/api/user/:militaryId/procedure', (req, res) => {
 
     console.log('✅ Procedure added for user:', req.params.militaryId);
 
-    res.json({
+    return res.json({
       success: true,
       message: 'Procedure added successfully',
       procedure,
     });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to add procedure' });
+    return res.status(500).json({ error: 'Failed to add procedure' });
   }
 });
 
@@ -464,7 +476,7 @@ app.delete('/api/user/:militaryId/procedure/:procedureIndex', (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    const index = parseInt(req.params.procedureIndex);
+    const index = parseInt(req.params.procedureIndex, 10);
 
     if (index < 0 || index >= user.procedures.length) {
       return res.status(400).json({ error: 'Invalid procedure index' });
@@ -477,13 +489,13 @@ app.delete('/api/user/:militaryId/procedure/:procedureIndex', (req, res) => {
 
     console.log('✅ Procedure deleted for user:', req.params.militaryId);
 
-    res.json({
+    return res.json({
       success: true,
       message: 'Procedure deleted successfully',
       deletedProcedure: deletedProcedure[0],
     });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to delete procedure' });
+    return res.status(500).json({ error: 'Failed to delete procedure' });
   }
 });
 
@@ -503,13 +515,13 @@ app.post('/api/user/:militaryId/photo/approve', (req, res) => {
 
     console.log('✅ Photo approved for user:', req.params.militaryId);
 
-    res.json({
+    return res.json({
       success: true,
       message: 'Photo approved successfully',
       photoStatus: 'approved',
     });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to approve photo' });
+    return res.status(500).json({ error: 'Failed to approve photo' });
   }
 });
 
@@ -531,14 +543,14 @@ app.post('/api/user/:militaryId/photo/reject', (req, res) => {
 
     console.log('✅ Photo rejected for user:', req.params.militaryId, 'Reason:', reason);
 
-    res.json({
+    return res.json({
       success: true,
       message: 'Photo rejected successfully',
       photoStatus: 'rejected',
       reason,
     });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to reject photo' });
+    return res.status(500).json({ error: 'Failed to reject photo' });
   }
 });
 
@@ -584,7 +596,7 @@ app.delete('/api/admin/user/:militaryId', (req, res) => {
 
     console.log('✅ User permanently deleted:', militaryId);
 
-    res.json({
+    return res.json({
       success: true,
       message: `User ${deletedUser.fullName} has been permanently deleted`,
       deletedUser: {
@@ -594,7 +606,7 @@ app.delete('/api/admin/user/:militaryId', (req, res) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to delete user' });
+    return res.status(500).json({ error: 'Failed to delete user' });
   }
 });
 
@@ -615,7 +627,7 @@ app.put('/api/admin/user/:userId/status', (req, res) => {
 // Send Email (Admin)
 app.post('/api/admin/email', (req, res) => {
   try {
-    const { to, subject, body } = req.body;
+    const { to, subject } = req.body;
 
     // Here you would send email using Nodemailer
     console.log('Email sent to:', to, 'Subject:', subject);
@@ -632,9 +644,8 @@ app.post('/api/admin/email', (req, res) => {
 // Add Procedure (Admin)
 app.post('/api/admin/procedures', (req, res) => {
   try {
-    const {
-      userId, procedureName, status, requirements,
-    } = req.body;
+    // Procedure data from request body is available for future API enhancements
+    // Current implementation uses existing endpoint structure
 
     res.json({
       success: true,
@@ -648,10 +659,8 @@ app.post('/api/admin/procedures', (req, res) => {
 // Update Spouse Information (Admin)
 app.put('/api/admin/spouse/:userId', (req, res) => {
   try {
-    const {
-      fullName, mobile, dob, occupation, address, email,
-    } = req.body;
-
+    // Spouse data from request body is available for future API enhancements
+    // Current implementation uses existing endpoint structure
     res.json({
       success: true,
       message: 'Spouse information updated successfully',
@@ -662,7 +671,7 @@ app.put('/api/admin/spouse/:userId', (req, res) => {
 });
 
 // Error handling middleware
-app.use((err, req, res, next) => {
+app.use((err, req, res, _next) => {
   console.error(err.stack);
   res.status(500).json({ error: 'Internal server error' });
 });

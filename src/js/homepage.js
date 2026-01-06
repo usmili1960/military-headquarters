@@ -212,7 +212,7 @@ userSignupForm.addEventListener('submit', (e) => {
   const msgParent = verificationMessage.parentElement;
   msgParent.insertBefore(
     verificationCodeDisplay,
-    verificationMessage.nextElementSibling
+    verificationMessage.nextElementSibling,
   );
   verificationCodeDisplay.className = 'verification-code-display';
 });
@@ -227,7 +227,8 @@ verificationForm.addEventListener('submit', (e) => {
   e.preventDefault();
   const userEnteredCode = document.getElementById('verificationCode').value.trim();
 
-  if (userEnteredCode.length !== 6 || isNaN(userEnteredCode)) {
+  if (userEnteredCode.length !== 6 || Number.isNaN(Number(userEnteredCode))) {
+    // eslint-disable-next-line no-alert
     alert('Please enter a valid 6-digit verification code');
     return;
   }
@@ -699,11 +700,13 @@ function sendPasswordResetCode(email, phone, code, isSms = false) {
 
 // Slideshow functions
 function changeSlide(n) {
-  showSlide(currentSlideIndex += n);
+  showSlide(currentSlideIndex += n); // eslint-disable-line no-plusplus
 }
 
+// eslint-disable-next-line no-unused-vars
 function currentSlide(n) {
-  showSlide(currentSlideIndex = n);
+  // Future enhancement: direct slide navigation
+  showSlide(currentSlideIndex = n); // eslint-disable-line no-plusplus
 }
 
 function showSlide(n) {

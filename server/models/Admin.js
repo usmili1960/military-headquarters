@@ -88,15 +88,15 @@ adminSchema.pre('save', async function (next) {
   try {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
-    next();
+    return next();
   } catch (error) {
-    next(error);
+    return next(error);
   }
 });
 
 // Compare password method
 adminSchema.methods.comparePassword = async function (enteredPassword) {
-  return await bcrypt.compare(enteredPassword, this.password);
+  return bcrypt.compare(enteredPassword, this.password);
 };
 
 // Check if admin has specific permission
@@ -136,7 +136,7 @@ adminSchema.pre('save', function (next) {
   };
 
   this.permissions = rolePermissions[this.role] || [];
-  next();
+  return next();
 });
 
 // Hide sensitive data

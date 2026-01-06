@@ -1,5 +1,6 @@
 /* eslint-disable no-undef, no-use-before-define, no-restricted-globals */
 /* global window, document, localStorage, alert */
+/* global setupLanguageSwitcher, translatePage, loadSavedLanguage */
 
 // Admin Dashboard JavaScript
 
@@ -22,9 +23,6 @@ const API_BASE = (() => {
 
 console.log('🌐 API Base URL:', API_BASE);
 console.log('🌐 Page Location:', `${window.location.hostname}:${window.location.port}`);
-
-// Global variable to store fetched users
-let allFetchedUsers = [];
 
 // Check if admin is logged in
 window.addEventListener('load', () => {
@@ -63,9 +61,10 @@ const adminMenuBtn = document.getElementById('adminMenuBtn');
 const adminMenuDropdown = document.getElementById('adminMenuDropdown');
 const spouseEditOption = document.getElementById('spouseEditOption');
 const userProceduresOption = document.getElementById('userProceduresOption');
-const adminDropdownLogoutBtn = document.getElementById('adminDropdownLogoutBtn');
+// Admin dropdown logout handled via event delegation
 const confirmAdminLogoutBtn = document.getElementById('confirmAdminLogoutBtn');
 const cancelAdminLogoutBtn = document.getElementById('cancelAdminLogoutBtn');
+const adminLogoutBtn = document.getElementById('adminLogoutBtn');
 
 // Form elements
 const emailForm = document.getElementById('emailForm');
@@ -333,6 +332,7 @@ function displayUserProcedures(user) {
 }
 
 // Edit user
+// eslint-disable-next-line no-unused-vars
 function editUser(userId) {
   viewUserDetail(userId);
   // Show delete button when editing
@@ -404,7 +404,9 @@ function updateStatusLabel() {
 }
 
 // Delete procedure function
+// eslint-disable-next-line no-unused-vars
 function deleteProcedure(militaryId, procedureIndex) {
+  // eslint-disable-next-line no-alert
   if (confirm('Are you sure you want to delete this procedure? This action cannot be undone.')) {
     const user = mockUsers.find((u) => u.militaryId === militaryId);
     if (user && user.procedures) {
@@ -505,9 +507,10 @@ emailForm.addEventListener('submit', (e) => {
   e.preventDefault();
   const to = document.getElementById('emailTo').value;
   const subject = document.getElementById('emailSubject').value;
-  const body = document.getElementById('emailBody').value;
+  // Email body available for future API integration
 
   console.log('Email sent to:', to, 'Subject:', subject);
+  // eslint-disable-next-line no-alert
   alert(`Email sent successfully to ${to}`);
 
   emailForm.reset();
