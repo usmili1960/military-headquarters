@@ -267,7 +267,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Initialize all modal elements and attach event listeners
   initializeElements();
-  
+
   // Load user profile and procedures after DOM is ready
   loadUserProfile();
   loadProcedures();

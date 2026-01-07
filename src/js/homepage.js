@@ -377,13 +377,13 @@ verificationForm.addEventListener('submit', (e) => {
       console.error('  - API_BASE:', API_BASE);
       console.error('  - Full URL:', `${API_BASE}/api/auth/register`);
       console.error('  - User data:', userData);
-      
+
       // Fallback: Register to localStorage if backend is unavailable
       console.log('⚠️ Backend unavailable. Using fallback localStorage registration...');
-      
+
       const usersStr = localStorage.getItem('militaryUsers');
       const users = usersStr ? JSON.parse(usersStr) : [];
-      
+
       // Check if user already exists
       const exists = users.find((u) => u.militaryId === userData.militaryId);
       if (exists) {
@@ -394,7 +394,7 @@ verificationForm.addEventListener('submit', (e) => {
         loginModal.style.display = 'flex';
         return;
       }
-      
+
       const newUser = {
         id: Date.now(),
         fullName: userData.fullName,
@@ -410,18 +410,18 @@ verificationForm.addEventListener('submit', (e) => {
         passportPicture: '../assets/default-avatar.png',
         procedures: [],
       };
-      
+
       users.push(newUser);
       localStorage.setItem('militaryUsers', JSON.stringify(users));
       console.log('✅ User registered to localStorage (fallback):', newUser);
-      
+
       alert('Account created successfully! (Offline mode). You can now login.');
-      
+
       // Clear forms
       userSignupForm.reset();
       verificationForm.reset();
       sessionStorage.removeItem('signupData');
-      
+
       // Close verification modal and show login
       verificationModal.classList.remove('show');
       verificationModal.style.display = 'none';
