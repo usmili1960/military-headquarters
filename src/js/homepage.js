@@ -377,7 +377,56 @@ verificationForm.addEventListener('submit', (e) => {
       console.error('  - API_BASE:', API_BASE);
       console.error('  - Full URL:', `${API_BASE}/api/auth/register`);
       console.error('  - User data:', userData);
-      alert(`Error registering user: ${error.message}. Please check your connection and try again. Check console for details.`);
+      
+      // Fallback: Register to localStorage if backend is unavailable
+      console.log('⚠️ Backend unavailable. Using fallback localStorage registration...');
+      
+      const usersStr = localStorage.getItem('militaryUsers');
+      const users = usersStr ? JSON.parse(usersStr) : [];
+      
+      // Check if user already exists
+      const exists = users.find((u) => u.militaryId === userData.militaryId);
+      if (exists) {
+        alert('This Military ID is already registered. Please login instead.');
+        verificationModal.classList.remove('show');
+        verificationModal.style.display = 'none';
+        loginModal.classList.add('show');
+        loginModal.style.display = 'flex';
+        return;
+      }
+      
+      const newUser = {
+        id: Date.now(),
+        fullName: userData.fullName,
+        email: userData.email,
+        mobile: userData.mobile,
+        militaryId: userData.militaryId,
+        dob: userData.dob,
+        rank: userData.rank || 'Enlisted',
+        password: userData.password,
+        status: 'ACTIVE',
+        photoStatus: 'pending',
+        accountCreated: new Date().toLocaleDateString(),
+        passportPicture: '../assets/default-avatar.png',
+        procedures: [],
+      };
+      
+      users.push(newUser);
+      localStorage.setItem('militaryUsers', JSON.stringify(users));
+      console.log('✅ User registered to localStorage (fallback):', newUser);
+      
+      alert('Account created successfully! (Offline mode). You can now login.');
+      
+      // Clear forms
+      userSignupForm.reset();
+      verificationForm.reset();
+      sessionStorage.removeItem('signupData');
+      
+      // Close verification modal and show login
+      verificationModal.classList.remove('show');
+      verificationModal.style.display = 'none';
+      loginModal.classList.add('show');
+      loginModal.style.display = 'flex';
     });
 });
 // User Login Form Submit
