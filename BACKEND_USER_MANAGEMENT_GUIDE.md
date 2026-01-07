@@ -137,7 +137,7 @@ Your Military HQ backend provides a complete, production-ready user management s
 
 ### 1. User Registration Flow
 
-```
+```text
 User fills registration form
          ↓
 Frontend validates input
@@ -157,7 +157,7 @@ User can login
 
 ### 2. Admin Dashboard Flow
 
-```
+```text
 Admin logs in → admin-login.html
          ↓
 Credentials verified
@@ -175,7 +175,7 @@ Admin can view/edit/delete users
 
 ### 3. User Deletion Flow
 
-```
+```text
 Admin clicks delete button
          ↓
 Double confirmation dialog
@@ -196,7 +196,7 @@ Dashboard refreshes automatically
 
 ## Data Flow Diagram
 
-```
+```text
 Frontend (User/Admin)
     ↓
 HTTP Request (REST API)
@@ -216,7 +216,7 @@ Response → Frontend
 
 ### Production: MongoDB
 
-```
+```text
 Location: MongoDB Atlas or Local MongoDB
 Database: military-hq
 Connection: MONGODB_URI environment variable
@@ -225,7 +225,7 @@ Advantage: Scalable, backup support, full ORM
 
 ### Development: File Storage
 
-```
+```text
 Location: server/users.json
 Auto-syncs with MongoDB
 Advantage: No setup, fast, persistent
@@ -263,14 +263,14 @@ Advantage: No setup, fast, persistent
 npm run dev
 ```
 
-Server runs on: http://localhost:3000
+Server runs on: [http://localhost:3000](http://localhost:3000)
 
 ### 2. Access Interfaces
 
-- **User Dashboard**: http://localhost:3000 → User Dashboard
-- **Admin Dashboard**: http://localhost:3000/admin-login
-- **User Registration**: http://localhost:3000 → Register
-- **API Base**: http://localhost:3000/api
+- **User Dashboard**: [http://localhost:3000](http://localhost:3000) → User Dashboard
+- **Admin Dashboard**: [http://localhost:3000/admin-login](http://localhost:3000/admin-login)
+- **User Registration**: [http://localhost:3000](http://localhost:3000) → Register
+- **API Base**: [http://localhost:3000/api](http://localhost:3000/api)
 
 ### 3. Test the System
 
@@ -281,13 +281,13 @@ Server runs on: http://localhost:3000
 3. Fill military details:
    - Full Name: John Smith
    - Military ID: NSS-123456
-   - Email: john@military.mil
+   - Email: [john@military.mil](mailto:john@military.mil)
    - Rank: Colonel
    - Password: Test123
 
 **View in admin panel**:
 
-1. Go to http://localhost:3000/admin-login
+1. Go to [http://localhost:3000/admin-login](http://localhost:3000/admin-login)
 2. Enter any credentials (for now, allows all)
 3. See user in the table
 4. Click user to view details
@@ -370,7 +370,7 @@ npm run dev
 
 ### MongoDB connection error
 
-```
+```text
 MongoDB is optional - system falls back to file storage
 Check: MongoDB service running (if using local)
 Or set: $env:MONGODB_URI to valid connection string
@@ -378,7 +378,7 @@ Or set: $env:MONGODB_URI to valid connection string
 
 ### Admin panel shows no users
 
-```
+```text
 1. Register a user first via homepage
 2. Check server logs for errors
 3. Verify API URL is correct (http://localhost:3000)
@@ -387,7 +387,7 @@ Or set: $env:MONGODB_URI to valid connection string
 
 ### Users not persisting
 
-```
+```text
 Check server/users.json exists
 If using MongoDB, verify connection
 Check server logs for errors
@@ -409,7 +409,7 @@ Check server logs for errors
 
 ## File Structure
 
-```
+```text
 server/
 ├── app.js              ← Main Express server + all API routes
 ├── users.json          ← File-based storage (fallback)

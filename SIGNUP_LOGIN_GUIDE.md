@@ -62,7 +62,7 @@ Your registration and login system is now **fully operational** with built-in fa
 
 ### Step 1: Open Homepage
 
-```
+```text
 http://localhost:3000
 or
 http://127.0.0.1:5500  (if using live server)
@@ -75,7 +75,7 @@ http://127.0.0.1:5500  (if using live server)
 
 ### Example Data:
 
-```
+```text
 Full Name:    John Smith
 Military ID:  NSS-123456
 Email:        john@military.mil
@@ -115,7 +115,7 @@ Confirm:      SecurePass123
 
 ### Step 2: Enter Credentials
 
-```
+```text
 Military ID:  NSS-123456
 Password:     SecurePass123
 ```
@@ -146,7 +146,7 @@ npm start        # Production server
 npm run dev      # Development with auto-reload
 ```
 
-Server runs on: `http://localhost:3000`
+Server runs on: [http://localhost:3000](http://localhost:3000)
 
 ### Option 2: Check if Server is Running
 
@@ -181,7 +181,7 @@ Invoke-WebRequest -Uri "http://localhost:3000" -UseBasicParsing
 
 ### Example Verification Code:
 
-```
+```text
 Your Verification Code:
 9 9 2 8 7 0
 ```
@@ -192,14 +192,14 @@ Your Verification Code:
 
 ### Problem: "Failed to fetch" error during registration
 
-**Solution 1: Start the backend server**
+#### Solution 1: Start the backend server
 
 ```powershell
 npm start
 # Server should be running on port 3000
 ```
 
-**Solution 2: Use fallback mode**
+#### Solution 2: Use fallback mode\*\*
 
 - System automatically falls back to localStorage
 - Registration still succeeds
@@ -233,7 +233,7 @@ npm start
 
 ---
 
-### Problem: Can't access http://localhost:3000
+### Problem: Can't access [http://localhost:3000](http://localhost:3000)
 
 **Solution 1**: Check port availability
 
@@ -244,7 +244,7 @@ netstat -ano | findstr ":3000"
 
 **Solution 2**: Use alternative URL
 
-```
+```text
 http://127.0.0.1:3000
 ```
 
@@ -319,14 +319,14 @@ npm start
 
 ### Ready-to-Use Test Account
 
-```
+```text
 Military ID: NSS-123456
 Password:    SecurePass123
 ```
 
 Or create your own:
 
-```
+```text
 Military ID: NSS-999999
 Email:       test@military.mil
 Password:    Test123
@@ -338,7 +338,7 @@ Password:    Test123
 
 All endpoints work for registration/login:
 
-```
+```text
 POST /api/auth/register         - Register new user
 POST /api/auth/login            - User login
 POST /api/auth/send-verification-code  - Send verification
@@ -379,7 +379,7 @@ Press `F12` and check Console tab for:
 
 2. ✅ **Open browser**:
 
-   ```
+   ```text
    http://localhost:3000
    ```
 
