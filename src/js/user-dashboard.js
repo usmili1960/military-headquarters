@@ -232,7 +232,8 @@ function initializeElements() {
   attachEventListeners();
 }
 
-window.addEventListener('load', () => {
+// Initialize DOM elements and setup language switcher
+document.addEventListener('DOMContentLoaded', () => {
   // Check if user is logged in
   if (localStorage.getItem('userLoggedIn') !== 'true') {
     alert('Please login first');
@@ -246,22 +247,19 @@ window.addEventListener('load', () => {
     try {
       currentUser = JSON.parse(userStr);
       console.log('✅ Loaded user from localStorage:', currentUser);
-      loadUserProfile();
-      loadProcedures();
     } catch (error) {
       console.error('❌ Failed to parse user data:', error);
       alert('Error loading user data');
       window.location.href = './index.html';
+      return;
     }
   } else {
     console.error('❌ No user data found in localStorage');
     alert('No user data found. Please login again.');
     window.location.href = './index.html';
+    return;
   }
-});
 
-// Initialize DOM elements and setup language switcher
-document.addEventListener('DOMContentLoaded', () => {
   // Initialize language system
   loadSavedLanguage();
   setupLanguageSwitcher();
@@ -269,6 +267,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Initialize all modal elements and attach event listeners
   initializeElements();
+  
+  // Load user profile and procedures after DOM is ready
+  loadUserProfile();
+  loadProcedures();
 
   // User Menu Dropdown
   const userMenuBtn = document.getElementById('userMenuBtn');
