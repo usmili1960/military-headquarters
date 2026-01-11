@@ -100,6 +100,8 @@ app.use(express.static(path.join(__dirname, '../src')));
 app.use('/images', express.static(path.join(__dirname, '../images')));
 // Serve assets folder
 app.use('/assets', express.static(path.join(__dirname, '../src/assets')));
+// Serve video folder
+app.use('/video', express.static(path.join(__dirname, '../video')));
 
 // Routes
 app.get('/', (req, res) => {

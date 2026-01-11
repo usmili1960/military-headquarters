@@ -3,7 +3,7 @@
     display: flex;
     flex-direction: column;
     min-height: 100vh;
-    background-image: url('../assets/usa-flag-pattern.png');
+    background-image: url('/images/Military_flags_pattern_background_ee686acd.png');
     background-size: 200px;
     background-attachment: fixed;
     opacity: 0.95;
