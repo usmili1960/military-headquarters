@@ -3,9 +3,14 @@
 
 // Homepage JavaScript
 
-// API Configuration - supports both localhost and 127.0.0.1, any port
+// API Configuration - auto-detects production vs local environment
 const API_BASE = (() => {
-  // Always use localhost:3000 for API calls
+  const hostname = window.location.hostname;
+  // If on production domain (onrender.com, etc), use current domain
+  if (hostname.includes('onrender.com') || hostname.includes('railway.app') || (!hostname.includes('localhost') && !hostname.includes('127.0.0.1'))) {
+    return window.location.origin;
+  }
+  // Local development - use localhost:3000
   return 'http://localhost:3000';
 })();
 

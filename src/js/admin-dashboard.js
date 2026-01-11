@@ -4,20 +4,14 @@
 
 // Admin Dashboard JavaScript
 
-// API Configuration - supports both localhost and 127.0.0.1, any port
+// API Configuration - auto-detects production vs local environment
 const API_BASE = (() => {
-  const hostname = window.location.hostname || 'localhost';
-  const { port } = window.location;
-
-  // If on port 5500 or no port, use localhost:3000 for backend
-  if (port === '5500' || port === '') {
-    return 'http://localhost:3000';
+  const hostname = window.location.hostname;
+  // If on production domain (onrender.com, etc), use current domain
+  if (hostname.includes('onrender.com') || hostname.includes('railway.app') || (!hostname.includes('localhost') && !hostname.includes('127.0.0.1'))) {
+    return window.location.origin;
   }
-  // If we have a port, construct the URL
-  if (port) {
-    return `http://${hostname}:3000`;
-  }
-  // Default fallback
+  // Local development - use localhost:3000
   return 'http://localhost:3000';
 })();
 
