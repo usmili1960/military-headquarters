@@ -1,9 +1,9 @@
-/* global window, document, localStorage, FileReader, alert, translations */
+/* global window, document, localStorage, FileReader, alert, translations, currentLanguage */
 // User Dashboard JavaScript
 
 // Get current user from localStorage or redirect to login
 let currentUser = null;
-let currentLanguage = 'en';
+// currentLanguage is defined in translations.js
 
 // Modal elements - Will be initialized after DOM loads
 let spouseModal = null;
