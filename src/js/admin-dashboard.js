@@ -18,11 +18,47 @@ const API_BASE = (() => {
 console.log('🌐 API Base URL:', API_BASE);
 console.log('🌐 Page Location:', `${window.location.hostname}:${window.location.port}`);
 
+// Helper function to get cookie value
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+  return null;
+}
+
 // Check if admin is logged in
-window.addEventListener('load', () => {
-  if (localStorage.getItem('adminLoggedIn') !== 'true') {
+window.addEventListener('load', async () => {
+  const adminToken = getCookie('adminToken');
+  
+  if (!adminToken) {
     alert('⚠️ Unauthorized Access!\n\nYou must login through the Admin Login page to access this panel.\n\nRedirecting to Admin Login...');
     window.location.href = './admin-login.html';
+    return;
+  }
+
+  // Verify token with backend
+  try {
+    const response = await fetch(`${API_BASE}/api/admin/verify`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${adminToken}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Invalid session');
+    }
+
+    const data = await response.json();
+    console.log('✅ Admin verified:', data.admin.email);
+
+  } catch (error) {
+    console.error('❌ Session verification failed:', error);
+    alert('⚠️ Your session has expired. Please login again.');
+    document.cookie = 'adminToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    window.location.href = './admin-login.html';
+    return;
   }
 
   // Initialize language system
@@ -120,14 +156,18 @@ const mockUsers = [
 
 let currentSelectedUser = null;
 
-// Fetch users from localStorage and backend
+// Fetch users from backend
 function fetchAndLoadUsers() {
+  // Get admin token from cookie
+  const adminToken = getCookie('adminToken');
+  
   // First try to fetch from backend API
   fetch(`${API_BASE}/api/admin/users`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json',
+      ...(adminToken && { Authorization: `Bearer ${adminToken}` }),
     },
   })
     .then((response) => {
@@ -144,11 +184,6 @@ function fetchAndLoadUsers() {
       if (backendUsers && Array.isArray(backendUsers) && backendUsers.length > 0) {
         console.log('📋 Displaying', backendUsers.length, 'users from backend');
         allFetchedUsers = backendUsers;
-
-        // Store in localStorage as backup
-        localStorage.setItem('militaryUsers', JSON.stringify(backendUsers));
-        console.log('💾 Cached users to localStorage');
-
         loadUsersTable(allFetchedUsers);
       } else if (backendUsers && Array.isArray(backendUsers)) {
         console.log('⚠️ Backend returned empty array, showing "No users found"');
@@ -161,26 +196,12 @@ function fetchAndLoadUsers() {
     })
     .catch((error) => {
       console.log('❌ Backend API error:', error.message);
-      console.log('🔄 Falling back to localStorage...');
-
-      // Fallback to localStorage if backend is not available
-      const usersStr = localStorage.getItem('militaryUsers');
-      const registeredUsers = usersStr ? JSON.parse(usersStr) : [];
-
-      console.log('📱 localStorage users:', registeredUsers);
-
-      // Merge with mock users for backup
-      const allUsers = [...mockUsers];
-
-      // Add registered users to the mix
-      if (registeredUsers && registeredUsers.length > 0) {
-        allUsers.push(...registeredUsers);
-      }
-
-      console.log('📊 Total merged users:', allUsers.length);
-      allFetchedUsers = allUsers;
+      console.log('⚠️ Could not load users from backend');
+      
+      // Show mock users as fallback
+      allFetchedUsers = mockUsers;
       loadUsersTable(allFetchedUsers);
-      console.log('✅ Users loaded from localStorage:', allFetchedUsers.length, 'users found');
+      console.log('✅ Showing mock users:', allFetchedUsers.length, 'users');
     });
 }
 
@@ -360,11 +381,15 @@ function deleteUser(userId) {
   const doubleConfirm = confirm(`This will permanently delete all data for ${user.fullName}. This action is IRREVERSIBLE.`);
   if (!doubleConfirm) return;
 
+  // Get admin token from cookie
+  const adminToken = getCookie('adminToken');
+
   // Call backend API to delete user
   fetch(`${API_BASE}/api/admin/user/${user.militaryId}`, {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',
+      ...(adminToken && { Authorization: `Bearer ${adminToken}` }),
     },
   })
     .then((response) => response.json())
@@ -693,9 +718,9 @@ adminLogoutBtn.addEventListener('click', () => {
 });
 
 confirmAdminLogoutBtn.addEventListener('click', () => {
-  // Clear admin session
-  localStorage.removeItem('adminLoggedIn');
-  localStorage.removeItem('adminEmail');
+  // Clear admin session cookies
+  document.cookie = 'adminToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+  document.cookie = 'adminEmail=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
   alert('✅ Admin logged out successfully');
   window.location.href = './index.html';
 });

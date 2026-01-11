@@ -472,56 +472,25 @@ userLoginForm.addEventListener('submit', (e) => {
       console.log('✅ Login response:', data);
       if (!data.success) {
         console.log('Backend returned success: false -', data.error);
-        // Backend login failed, try localStorage
         throw new Error(data.error || 'Backend login failed');
       }
 
-      // Backend login succeeded
+      // Backend login succeeded - store in cookie
       console.log('✅ Backend login successful');
-      localStorage.setItem('userLoggedIn', 'true');
-      localStorage.setItem('userMilitaryId', militaryId);
-      localStorage.setItem('userToken', data.token);
-      localStorage.setItem('currentUser', JSON.stringify(data.user));
+      
+      // Set token in cookie (7 days expiry)
+      const expiryDate = new Date();
+      expiryDate.setDate(expiryDate.getDate() + 7);
+      document.cookie = `userToken=${data.token}; expires=${expiryDate.toUTCString()}; path=/; SameSite=Strict`;
+      document.cookie = `userMilitaryId=${militaryId}; expires=${expiryDate.toUTCString()}; path=/; SameSite=Strict`;
+      document.cookie = `currentUser=${encodeURIComponent(JSON.stringify(data.user))}; expires=${expiryDate.toUTCString()}; path=/; SameSite=Strict`;
 
       alert('Login successful! Redirecting to user dashboard...');
       window.location.href = './user-dashboard.html';
     })
     .catch((error) => {
-      console.log('❌ Backend login error:', error.message);
-      console.log('Falling back to localStorage...');
-
-      // Backend login failed, try localStorage
-      const usersStr = localStorage.getItem('militaryUsers');
-      const users = usersStr ? JSON.parse(usersStr) : [];
-
-      console.log('📊 Checking against', users.length, 'users in localStorage');
-      console.log('🔍 Looking for user with Military ID:', militaryId);
-
-      const user = users.find((u) => u.militaryId === militaryId);
-
-      if (!user) {
-        console.error('❌ User not found with Military ID:', militaryId);
-        console.log('📋 Available users:', users.map((u) => u.militaryId));
-        alert('User not found. Please sign up first.');
-        return;
-      }
-
-      console.log('✅ User found in localStorage:', { fullName: user.fullName, militaryId: user.militaryId });
-
-      if (user.password !== password) {
-        console.error('❌ Password mismatch for user:', militaryId);
-        alert('Invalid password. Please try again.');
-        return;
-      }
-
-      console.log('✅ Login successful from localStorage');
-      localStorage.setItem('userLoggedIn', 'true');
-      localStorage.setItem('userMilitaryId', militaryId);
-      localStorage.setItem('userToken', `user_token_${Math.random().toString(36).substr(2, 9)}`);
-      localStorage.setItem('currentUser', JSON.stringify(user));
-
-      alert('Login successful! Redirecting to user dashboard...');
-      window.location.href = './user-dashboard.html';
+      console.error('❌ Backend login error:', error.message);
+      alert(`Login failed: ${error.message}\\n\\nPlease make sure you are registered and the server is running.`);
     });
 });
 

@@ -321,32 +321,64 @@
     </div>
 
     <script>
+        // API Configuration
+        const API_BASE = (() => {
+            const hostname = window.location.hostname;
+            if (hostname.includes('onrender.com') || hostname.includes('railway.app') || (!hostname.includes('localhost') && !hostname.includes('127.0.0.1'))) {
+                return window.location.origin;
+            }
+            return 'http://localhost:3000';
+        })();
+
         // Admin Login Form Submit
-        document.getElementById('adminLoginForm').addEventListener('submit', (e) => {
+        document.getElementById('adminLoginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const email = document.getElementById('adminEmail').value;
+            const email = document.getElementById('adminEmail').value.trim();
             const password = document.getElementById('adminPassword').value;
             const rememberMe = document.getElementById('rememberMe').checked;
 
-            // Default admin credentials
-            const validEmail = 'admin@military.gov';
-            const validPassword = 'Admin@12345';
+            // Show loading state
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = '🔄 Logging in...';
+            submitBtn.disabled = true;
 
-            // Validate credentials
-            if (email === validEmail && password === validPassword) {
-                // Store admin session
-                localStorage.setItem('adminLoggedIn', 'true');
-                localStorage.setItem('adminEmail', email);
-                
-                if (rememberMe) {
-                    localStorage.setItem('rememberAdmin', 'true');
+            try {
+                // Call backend API for admin login
+                const response = await fetch(`${API_BASE}/api/auth/admin-login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    // Store admin session in httpOnly cookie (secure)
+                    const expiryDays = rememberMe ? 30 : 1; // 30 days if remember me, else 1 day
+                    const expiryDate = new Date();
+                    expiryDate.setDate(expiryDate.getDate() + expiryDays);
+                    
+                    // Set token in cookie (httpOnly would be better but set by backend)
+                    document.cookie = `adminToken=${data.token}; expires=${expiryDate.toUTCString()}; path=/; SameSite=Strict`;
+                    document.cookie = `adminEmail=${email}; expires=${expiryDate.toUTCString()}; path=/; SameSite=Strict`;
+
+                    alert('✅ Admin login successful! Redirecting to Admin Dashboard...');
+                    window.location.href = './admin-dashboard.html';
+                } else {
+                    throw new Error(data.error || 'Login failed');
                 }
-
-                alert('✅ Admin login successful! Redirecting to Admin Dashboard...');
-                window.location.href = './admin-dashboard.html';
-            } else {
-                alert('❌ Invalid email or password. Please try again.\n\nDefault credentials:\nEmail: admin@military.gov\nPassword: Admin@12345');
+            } catch (error) {
+                console.error('❌ Admin login error:', error);
+                alert(`❌ Login failed: ${error.message}\n\nDefault credentials:\nEmail: admin@military.gov\nPassword: Admin@12345`);
+                document.getElementById('adminPassword').value = '';
                 document.getElementById('adminPassword').focus();
+            } finally {
+                // Restore button state
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
             }
         });
 

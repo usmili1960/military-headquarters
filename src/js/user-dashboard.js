@@ -1,7 +1,15 @@
-/* global window, document, localStorage, FileReader, alert, translations, currentLanguage */
+/* global window, document, FileReader, alert, translations, currentLanguage */
 // User Dashboard JavaScript
 
-// Get current user from localStorage or redirect to login
+// Helper function to get cookie value
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+  return null;
+}
+
+// Get current user from cookie or redirect to login
 let currentUser = null;
 // currentLanguage is defined in translations.js
 
@@ -29,9 +37,9 @@ function translatePage() {
   });
 }
 
-// Load language from localStorage or default to English
+// Load language from cookie or default to English
 function loadSavedLanguage() {
-  const savedLanguage = localStorage.getItem('selectedLanguage');
+  const savedLanguage = getCookie('selectedLanguage');
   if (savedLanguage) {
     currentLanguage = savedLanguage;
     document.documentElement.lang = currentLanguage;
@@ -45,7 +53,10 @@ function setupLanguageSwitcher() {
     languageSelect.value = currentLanguage;
     languageSelect.addEventListener('change', (e) => {
       currentLanguage = e.target.value;
-      localStorage.setItem('selectedLanguage', currentLanguage);
+      // Save to cookie instead of localStorage
+      const expiryDate = new Date();
+      expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+      document.cookie = `selectedLanguage=${currentLanguage}; expires=${expiryDate.toUTCString()}; path=/; SameSite=Strict`;
       translatePage();
     });
   }
@@ -185,10 +196,10 @@ function attachEventListeners() {
   // Confirm logout button
   if (confirmLogoutBtn) {
     confirmLogoutBtn.addEventListener('click', () => {
-      localStorage.removeItem('userLoggedIn');
-      localStorage.removeItem('currentUser');
-      localStorage.removeItem('userToken');
-      localStorage.removeItem('userMilitaryId');
+      // Clear cookies
+      document.cookie = 'userToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      document.cookie = 'currentUser=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      document.cookie = 'userMilitaryId=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
       alert('You have been logged out successfully');
       window.location.href = './index.html';
     });
@@ -233,29 +244,24 @@ function initializeElements() {
 }
 
 // Initialize DOM elements and setup language switcher
-document.addEventListener('DOMContentLoaded', () => {
-  // Check if user is logged in
-  if (localStorage.getItem('userLoggedIn') !== 'true') {
+document.addEventListener('DOMContentLoaded', async () => {
+  // Check if user is logged in via cookie
+  const userToken = getCookie('userToken');
+  const currentUserCookie = getCookie('currentUser');
+  
+  if (!userToken || !currentUserCookie) {
     alert('Please login first');
     window.location.href = './index.html';
     return;
   }
 
-  // Get user data from localStorage
-  const userStr = localStorage.getItem('currentUser');
-  if (userStr) {
-    try {
-      currentUser = JSON.parse(userStr);
-      console.log('✅ Loaded user from localStorage:', currentUser);
-    } catch (error) {
-      console.error('❌ Failed to parse user data:', error);
-      alert('Error loading user data');
-      window.location.href = './index.html';
-      return;
-    }
-  } else {
-    console.error('❌ No user data found in localStorage');
-    alert('No user data found. Please login again.');
+  // Get user data from cookie
+  try {
+    currentUser = JSON.parse(decodeURIComponent(currentUserCookie));
+    console.log('✅ Loaded user from cookie:', currentUser);
+  } catch (error) {
+    console.error('❌ Failed to parse user data:', error);
+    alert('Error loading user data');
     window.location.href = './index.html';
     return;
   }

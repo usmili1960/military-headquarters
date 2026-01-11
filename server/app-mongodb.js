@@ -103,10 +103,9 @@ mongoose.connection.on('reconnected', () => {
 // ========================================
 
 app.use(cors({
-  origin: true, // Allow all origins with credentials
-  credentials: true, // Allow cookies
+  origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
 app.use(express.json());
@@ -512,64 +511,6 @@ app.post('/api/auth/verify', (req, res) => {
   }
 
   return res.json({ success: true, message: 'Account verified successfully' });
-});
-
-// Verify Admin Session
-app.get('/api/admin/verify', (req, res) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-
-  if (!token) {
-    return res.status(401).json({ success: false, error: 'No token provided' });
-  }
-
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    
-    if (decoded.role !== 'admin') {
-      return res.status(403).json({ success: false, error: 'Not an admin' });
-    }
-
-    return res.json({
-      success: true,
-      admin: {
-        email: decoded.email,
-        role: decoded.role,
-        permissions: decoded.permissions,
-      },
-    });
-  } catch (error) {
-    return res.status(403).json({ success: false, error: 'Invalid or expired token' });
-  }
-});
-
-// Verify User Session
-app.get('/api/user/verify', (req, res) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-
-  if (!token) {
-    return res.status(401).json({ success: false, error: 'No token provided' });
-  }
-
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    
-    if (decoded.role !== 'user') {
-      return res.status(403).json({ success: false, error: 'Not a user' });
-    }
-
-    return res.json({
-      success: true,
-      user: {
-        userId: decoded.userId,
-        militaryId: decoded.militaryId,
-        email: decoded.email,
-      },
-    });
-  } catch (error) {
-    return res.status(403).json({ success: false, error: 'Invalid or expired token' });
-  }
 });
 
 // ========================================
