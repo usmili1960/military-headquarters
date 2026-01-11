@@ -112,8 +112,32 @@ app.get('/user-dashboard', (req, res) => {
   res.sendFile(path.join(__dirname, '../src/pages/user-dashboard.html'));
 });
 
+app.get('/user-dashboard.html', (req, res) => {
+  res.sendFile(path.join(__dirname, '../src/pages/user-dashboard.html'));
+});
+
 app.get('/admin-dashboard', (req, res) => {
   res.sendFile(path.join(__dirname, '../src/pages/admin-dashboard.html'));
+});
+
+app.get('/admin-dashboard.html', (req, res) => {
+  res.sendFile(path.join(__dirname, '../src/pages/admin-dashboard.html'));
+});
+
+app.get('/admin-login', (req, res) => {
+  res.sendFile(path.join(__dirname, '../src/pages/admin-login.html'));
+});
+
+app.get('/admin-login.html', (req, res) => {
+  res.sendFile(path.join(__dirname, '../src/pages/admin-login.html'));
+});
+
+app.get('/admin-index', (req, res) => {
+  res.sendFile(path.join(__dirname, '../src/pages/admin-index.html'));
+});
+
+app.get('/admin-index.html', (req, res) => {
+  res.sendFile(path.join(__dirname, '../src/pages/admin-index.html'));
 });
 
 // API Routes
