@@ -61,13 +61,12 @@ async function createDefaultAdmin() {
     const existingAdmin = await Admin.findOne({ email: adminEmail });
     
     if (!existingAdmin) {
-      const hashedPassword = await bcrypt.hash('Admin@12345', 10);
       const admin = new Admin({
+        adminId: 'ADMIN-001',
         email: adminEmail,
-        password: hashedPassword,
+        password: 'Admin@12345', // Plain password - model will hash it
         fullName: 'System Administrator',
-        role: 'super-admin',
-        permissions: ['all'],
+        role: 'superadmin',
       });
       await admin.save();
       console.log('✅ Default admin account created');
@@ -267,10 +266,7 @@ app.post('/api/auth/register', async (req, res) => {
       });
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create new user
+    // Create new user (password will be hashed by model pre-save hook)
     const newUser = new User({
       userId: userIdCounter++,
       fullName: fullName.trim(),
@@ -279,7 +275,7 @@ app.post('/api/auth/register', async (req, res) => {
       mobile: mobile || '',
       dob: dob ? new Date(dob) : null,
       rank: rank || 'Recruit',
-      password: hashedPassword,
+      password: password, // Plain password - model will hash it
       photoUrl: passportPicture || null,
       status: 'active',
     });
@@ -428,16 +424,22 @@ app.post('/api/auth/admin-login', async (req, res) => {
     const admin = await Admin.findOne({ email: email.trim().toLowerCase() });
 
     if (!admin) {
+      console.log('❌ Admin not found in database');
       return res.status(401).json({
         success: false,
         error: 'Invalid credentials',
       });
     }
 
+    console.log('✅ Admin found:', admin.email);
+
     // Verify password
     const passwordMatch = await bcrypt.compare(password, admin.password);
 
+    console.log('🔑 Password match:', passwordMatch);
+
     if (!passwordMatch) {
+      console.log('❌ Password mismatch');
       return res.status(401).json({
         success: false,
         error: 'Invalid credentials',

@@ -249,9 +249,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   const userToken = getCookie('userToken');
   const currentUserCookie = getCookie('currentUser');
   
+  console.log('🔍 Checking authentication...');
+  console.log('Token exists:', !!userToken);
+  console.log('User cookie exists:', !!currentUserCookie);
+  
   if (!userToken || !currentUserCookie) {
-    alert('Please login first');
-    window.location.href = './index.html';
+    console.log('❌ No valid authentication found, redirecting...');
+    window.location.href = '/pages/index.html';
     return;
   }
 
@@ -261,8 +265,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.log('✅ Loaded user from cookie:', currentUser);
   } catch (error) {
     console.error('❌ Failed to parse user data:', error);
-    alert('Error loading user data');
-    window.location.href = './index.html';
+    window.location.href = '/pages/index.html';
     return;
   }
 
@@ -343,7 +346,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       console.log('✅ User logged out, localStorage cleared');
 
       // Redirect to login
-      window.location.href = './index.html';
+      window.location.href = '/pages/index.html';
     });
   }
 });

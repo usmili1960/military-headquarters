@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Military Personnel Registration</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .signup-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        .signup-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .signup-header h1 {
+            color: #1e3c72;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .signup-header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #1e3c72;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .required {
+            color: red;
+        }
+
+        .btn-signup {
+            width: 100%;
+            padding: 14px;
+            background: #1e3c72;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn-signup:hover {
+            background: #2a5298;
+        }
+
+        .btn-signup:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .message {
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+        }
+
+        .login-link a {
+            color: #1e3c72;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+
+        .help-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .signup-container {
+                padding: 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="signup-container">
+        <div class="signup-header">
+            <h1>🎖️ Military Personnel Registration</h1>
+            <p>United States Military Headquarters - Washington DC</p>
+        </div>
+
+        <div id="message" class="message"></div>
+
+        <form id="signupForm">
+            <div class="form-group">
+                <label>Full Name <span class="required">*</span></label>
+                <input type="text" id="fullName" name="fullName" required placeholder="Enter your full name">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Military ID <span class="required">*</span></label>
+                    <input type="text" id="militaryId" name="militaryId" required placeholder="NSS-123456" pattern="NSS-\d{6}">
+                    <div class="help-text">Format: NSS-XXXXXX</div>
+                </div>
+
+                <div class="form-group">
+                    <label>Rank</label>
+                    <select id="rank" name="rank">
+                        <option value="Recruit">Recruit</option>
+                        <option value="Private">Private</option>
+                        <option value="Corporal">Corporal</option>
+                        <option value="Sergeant">Sergeant</option>
+                        <option value="Lieutenant">Lieutenant</option>
+                        <option value="Captain">Captain</option>
+                        <option value="Major">Major</option>
+                        <option value="Colonel">Colonel</option>
+                        <option value="General">General</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Email <span class="required">*</span></label>
+                    <input type="email" id="email" name="email" required placeholder="your.email@military.gov">
+                </div>
+
+                <div class="form-group">
+                    <label>Mobile Number</label>
+                    <input type="tel" id="mobile" name="mobile" placeholder="+1234567890">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Date of Birth</label>
+                <input type="date" id="dob" name="dob">
+            </div>
+
+            <div class="form-group">
+                <label>Password <span class="required">*</span></label>
+                <input type="password" id="password" name="password" required placeholder="Create a strong password" minlength="8">
+                <div class="help-text">Minimum 8 characters</div>
+            </div>
+
+            <div class="form-group">
+                <label>Confirm Password <span class="required">*</span></label>
+                <input type="password" id="confirmPassword" name="confirmPassword" required placeholder="Re-enter your password">
+            </div>
+
+            <button type="submit" class="btn-signup" id="submitBtn">
+                Register Account
+            </button>
+        </form>
+
+        <div class="login-link">
+            Already have an account? <a href="/pages/index.html">Login here</a>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('signupForm');
+        const messageDiv = document.getElementById('message');
+        const submitBtn = document.getElementById('submitBtn');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (password !== confirmPassword) {
+                showMessage('Passwords do not match', 'error');
+                return;
+            }
+
+            const formData = {
+                fullName: document.getElementById('fullName').value,
+                militaryId: document.getElementById('militaryId').value,
+                email: document.getElementById('email').value,
+                mobile: document.getElementById('mobile').value,
+                dob: document.getElementById('dob').value,
+                rank: document.getElementById('rank').value,
+                password: password
+            };
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Registering...';
+
+            try {
+                const response = await fetch('http://localhost:3000/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showMessage('Registration successful! Redirecting to login...', 'success');
+                    form.reset();
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 2000);
+                } else {
+                    showMessage(data.error || 'Registration failed. Please try again.', 'error');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Register Account';
+                }
+            } catch (error) {
+                showMessage('Error connecting to server. Please try again.', 'error');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Register Account';
+            }
+        });
+
+        function showMessage(text, type) {
+            messageDiv.textContent = text;
+            messageDiv.className = `message ${type}`;
+            messageDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

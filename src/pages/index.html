@@ -295,13 +295,18 @@
           <div class="form-row">
             <div class="form-group">
               <label for="signupRank">Rank</label>
-              <input
-                type="text"
-                id="signupRank"
-                name="rank"
-                placeholder="e.g., General, Colonel, Private"
-                required
-              />
+              <select id="signupRank" name="rank" required>
+                <option value="">Select Rank</option>
+                <option value="Recruit">Recruit</option>
+                <option value="Private">Private</option>
+                <option value="Corporal">Corporal</option>
+                <option value="Sergeant">Sergeant</option>
+                <option value="Lieutenant">Lieutenant</option>
+                <option value="Captain">Captain</option>
+                <option value="Major">Major</option>
+                <option value="Colonel">Colonel</option>
+                <option value="General">General</option>
+              </select>
             </div>
             <div class="form-group">
               <label for="signupPassport" data-i18n="passport-picture">Passport Picture</label>

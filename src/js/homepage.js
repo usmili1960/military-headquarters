@@ -485,8 +485,8 @@ userLoginForm.addEventListener('submit', (e) => {
       document.cookie = `userMilitaryId=${militaryId}; expires=${expiryDate.toUTCString()}; path=/; SameSite=Strict`;
       document.cookie = `currentUser=${encodeURIComponent(JSON.stringify(data.user))}; expires=${expiryDate.toUTCString()}; path=/; SameSite=Strict`;
 
-      alert('Login successful! Redirecting to user dashboard...');
-      window.location.href = './user-dashboard.html';
+      console.log('✅ Cookies set, redirecting to dashboard...');
+      window.location.href = '/pages/user-dashboard.html';
     })
     .catch((error) => {
       console.error('❌ Backend login error:', error.message);
