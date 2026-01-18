@@ -198,8 +198,14 @@ function attachEventListeners() {
     confirmLogoutBtn.addEventListener('click', () => {
       // Clear cookies
       document.cookie = 'userToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-      document.cookie = 'currentUser=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
       document.cookie = 'userMilitaryId=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      
+      // Clear localStorage
+      localStorage.removeItem('currentUser');
+      localStorage.removeItem('userLoggedIn');
+      localStorage.removeItem('userMilitaryId');
+      localStorage.removeItem('userToken');
+      
       alert('You have been logged out successfully');
       window.location.href = './index.html';
     });
@@ -245,27 +251,36 @@ function initializeElements() {
 
 // Initialize DOM elements and setup language switcher
 document.addEventListener('DOMContentLoaded', async () => {
-  // Check if user is logged in via cookie
+  // Check if user is logged in via cookie (token) and localStorage (user data)
+  console.log('🔍 DOMContentLoaded - Starting authentication check...');
+  console.log('📍 Current URL:', window.location.href);
+  console.log('🍪 All cookies:', document.cookie);
+  console.log('💾 localStorage keys:', Object.keys(localStorage));
+  
   const userToken = getCookie('userToken');
-  const currentUserCookie = getCookie('currentUser');
+  const currentUserData = localStorage.getItem('currentUser');
+  const isLoggedIn = localStorage.getItem('userLoggedIn');
   
   console.log('🔍 Checking authentication...');
   console.log('Token exists:', !!userToken);
-  console.log('User cookie exists:', !!currentUserCookie);
+  console.log('Token value:', userToken ? userToken.substring(0, 20) + '...' : 'null');
+  console.log('User data exists:', !!currentUserData);
+  console.log('Logged in flag:', isLoggedIn);
   
-  if (!userToken || !currentUserCookie) {
+  if (!userToken || !currentUserData || isLoggedIn !== 'true') {
     console.log('❌ No valid authentication found, redirecting...');
-    window.location.href = '/pages/index.html';
+    console.log('Missing:', !userToken ? 'token' : (!currentUserData ? 'user data' : 'login flag'));
+    window.location.href = './index.html';
     return;
   }
 
-  // Get user data from cookie
+  // Get user data from localStorage
   try {
-    currentUser = JSON.parse(decodeURIComponent(currentUserCookie));
-    console.log('✅ Loaded user from cookie:', currentUser);
+    currentUser = JSON.parse(currentUserData);
+    console.log('✅ Loaded user from localStorage:', currentUser);
   } catch (error) {
     console.error('❌ Failed to parse user data:', error);
-    window.location.href = '/pages/index.html';
+    window.location.href = './index.html';
     return;
   }
 
@@ -346,7 +361,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       console.log('✅ User logged out, localStorage cleared');
 
       // Redirect to login
-      window.location.href = '/pages/index.html';
+      window.location.href = './index.html';
     });
   }
 });

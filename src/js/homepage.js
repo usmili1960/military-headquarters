@@ -475,18 +475,32 @@ userLoginForm.addEventListener('submit', (e) => {
         throw new Error(data.error || 'Backend login failed');
       }
 
-      // Backend login succeeded - store in cookie
+      // Backend login succeeded - store token in cookie, user data in localStorage
       console.log('✅ Backend login successful');
       
       // Set token in cookie (7 days expiry)
       const expiryDate = new Date();
       expiryDate.setDate(expiryDate.getDate() + 7);
+      
+      console.log('📝 Setting authentication data...');
+      
+      // Store token in cookie (small, secure)
       document.cookie = `userToken=${data.token}; expires=${expiryDate.toUTCString()}; path=/; SameSite=Strict`;
       document.cookie = `userMilitaryId=${militaryId}; expires=${expiryDate.toUTCString()}; path=/; SameSite=Strict`;
-      document.cookie = `currentUser=${encodeURIComponent(JSON.stringify(data.user))}; expires=${expiryDate.toUTCString()}; path=/; SameSite=Strict`;
+      
+      // Store user data in localStorage (no size limit)
+      localStorage.setItem('currentUser', JSON.stringify(data.user));
+      localStorage.setItem('userLoggedIn', 'true');
 
-      console.log('✅ Cookies set, redirecting to dashboard...');
-      window.location.href = '/pages/user-dashboard.html';
+      console.log('✅ Authentication data saved');
+      console.log('🍪 Cookies:', document.cookie);
+      console.log('💾 localStorage user:', data.user.fullName);
+      console.log('📍 Redirecting to: ./pages/user-dashboard.html');
+      
+      // Small delay to ensure data is saved before redirect
+      setTimeout(() => {
+        window.location.href = './pages/user-dashboard.html';
+      }, 100);
     })
     .catch((error) => {
       console.error('❌ Backend login error:', error.message);
