@@ -225,7 +225,7 @@ function loadUsersTable(users = mockUsers) {
 
   users.forEach((user) => {
     // Skip users with missing required fields
-    if (!user || !user.id || !user.fullName || !user.militaryId) {
+    if (!user || (!user.id && !user._id) || !user.fullName || !user.militaryId) {
       console.warn('⚠️ Skipping invalid user:', user);
       return;
     }
@@ -234,10 +234,10 @@ function loadUsersTable(users = mockUsers) {
     const status = user.status || 'ACTIVE';
     const rank = user.rank || 'N/A';
     const created = user.accountCreated || 'N/A';
-    const picture = user.passportPicture || '../assets/default-avatar.png';
+    const picture = user.photoUrl || user.passportPicture || '../assets/default-avatar.png';
 
     row.innerHTML = `
-            <td><img src="${picture}" alt="Profile" class="user-avatar"></td>
+            <td><img src="${picture}" alt="Profile" class="user-avatar" style="cursor: pointer;" onclick="openImageViewer('${picture}')"></td>
             <td>${user.fullName}</td>
             <td>${user.militaryId}</td>
             <td>${rank}</td>
@@ -250,8 +250,8 @@ function loadUsersTable(users = mockUsers) {
             <td>${created}</td>
             <td>
                 <div class="action-buttons">
-                    <button class="action-btn" onclick="viewUserDetail(${user.id})">View</button>
-                    <button class="action-btn" onclick="editUser(${user.id})">Edit</button>
+                    <button class="action-btn" onclick="viewUserDetail('${user.militaryId}')">View</button>
+                    <button class="action-btn" onclick="editUser('${user.militaryId}')">Edit</button>
                 </div>
             </td>
         `;
@@ -275,9 +275,9 @@ if (userSearchInput) {
 }
 
 // View user detail
-function viewUserDetail(userId) {
+function viewUserDetail(militaryId) {
   const usersToSearch = allFetchedUsers.length > 0 ? allFetchedUsers : mockUsers;
-  const user = usersToSearch.find((u) => u.id === userId);
+  const user = usersToSearch.find((u) => u.militaryId === militaryId);
   if (!user) return;
 
   currentSelectedUser = user;
@@ -289,7 +289,7 @@ function viewUserDetail(userId) {
   }
 
   // Populate modal
-  document.getElementById('userDetailPicture').src = user.passportPicture;
+  document.getElementById('userDetailPicture').src = user.photoUrl || user.passportPicture || '../assets/default-avatar.png';
   document.getElementById('userDetailName').textContent = user.fullName;
   document.getElementById('userDetailMilID').textContent = user.militaryId;
   document.getElementById('userDetailEmail').textContent = user.email;
@@ -348,8 +348,8 @@ function displayUserProcedures(user) {
 
 // Edit user
 // eslint-disable-next-line no-unused-vars
-function editUser(userId) {
-  viewUserDetail(userId);
+function editUser(militaryId) {
+  viewUserDetail(militaryId);
   // Show delete button when editing
   const deleteBtn = document.getElementById('deleteUserBtn');
   if (deleteBtn) {
@@ -765,3 +765,70 @@ document.addEventListener('click', (e) => {
 document.addEventListener('DOMContentLoaded', () => {
   loadUsersTable();
 });
+
+// ========================================
+// IMAGE VIEWER FUNCTIONALITY
+// ========================================
+
+// Function to open image viewer - queries elements each time to avoid initialization issues
+// eslint-disable-next-line no-unused-vars
+function openImageViewer(imageSrc) {
+  const imageViewerModal = document.getElementById('imageViewerModal');
+  const fullSizeImage = document.getElementById('fullSizeImage');
+  
+  if (!imageSrc || imageSrc.includes('default-avatar')) {
+    alert('No profile picture available');
+    return;
+  }
+  
+  if (fullSizeImage) {
+    fullSizeImage.src = imageSrc;
+  }
+  
+  if (imageViewerModal) {
+    imageViewerModal.style.display = 'block';
+    document.body.style.overflow = 'hidden'; // Prevent background scrolling
+  }
+}
+
+// Close image viewer
+document.addEventListener('DOMContentLoaded', () => {
+  const imageViewerModal = document.getElementById('imageViewerModal');
+  const closeImageViewer = document.getElementById('closeImageViewer');
+  
+  if (closeImageViewer) {
+    closeImageViewer.addEventListener('click', () => {
+      imageViewerModal.style.display = 'none';
+      document.body.style.overflow = 'auto';
+    });
+  }
+
+  // Close on background click
+  if (imageViewerModal) {
+    imageViewerModal.addEventListener('click', (e) => {
+      if (e.target === imageViewerModal) {
+        imageViewerModal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+      }
+    });
+  }
+
+  // Make user detail picture clickable
+  const userDetailPicture = document.getElementById('userDetailPicture');
+  if (userDetailPicture) {
+    userDetailPicture.style.cursor = 'pointer';
+    userDetailPicture.addEventListener('click', () => {
+      openImageViewer(userDetailPicture.src);
+    });
+  }
+});
+
+// Close on ESC key
+document.addEventListener('keydown', (e) => {
+  const imageViewerModal = document.getElementById('imageViewerModal');
+  if (e.key === 'Escape' && imageViewerModal && imageViewerModal.style.display === 'block') {
+    imageViewerModal.style.display = 'none';
+    document.body.style.overflow = 'auto';
+  }
+});
+

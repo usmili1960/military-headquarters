@@ -22,7 +22,7 @@
                     <i class="fas fa-globe"></i>
                     <span>English</span>
                 </button>
-                <div class="lang-dropdown hidden-display" id="adminLangDropdown">
+                <div class="lang-dropdown" id="adminLangDropdown">
                     <button class="lang-option" data-lang="en">English</button>
                     <button class="lang-option" data-lang="ja">日本語 (Japanese)</button>
                     <button class="lang-option" data-lang="es">Español (Spanish)</button>
@@ -353,11 +353,33 @@
         </div>
     </div>
 
+    <!-- Image Viewer Modal -->
+    <div class="modal" id="imageViewerModal" style="display: none; z-index: 10000; background: rgba(0, 0, 0, 0.95);">
+        <span class="close" id="closeImageViewer" style="position: fixed; top: 20px; right: 40px; color: white; font-size: 50px; z-index: 10002; cursor: pointer; text-shadow: 0 0 10px rgba(0,0,0,0.8); font-weight: 300;">&times;</span>
+        <div class="modal-content image-viewer-modal" style="background: transparent; box-shadow: none; border: none; max-width: 95%; max-height: 95vh; padding: 0; display: flex; align-items: center; justify-content: center;">
+            <img id="fullSizeImage" src="" alt="Full Size Profile Picture" style="max-width: 100%; max-height: 95vh; width: auto; height: auto; object-fit: contain; display: block; border-radius: 8px; box-shadow: 0 10px 50px rgba(0, 0, 0, 0.8);">
+        </div>
+        <div style="position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); color: white; font-size: 14px; text-align: center; z-index: 10001; background: rgba(0, 0, 0, 0.7); padding: 10px 20px; border-radius: 5px;">
+            <p style="margin: 0;">Click outside or press ESC to close</p>
+        </div>
+    </div>
+
     <!-- Footer -->
     <footer class="admin-footer">
     </footer>
 
     <script src="../js/translations.js"></script>
     <script src="../js/admin-dashboard.js"></script>
+    <script>
+        // Debug script to ensure language dropdown works
+        console.log('Checking language switcher elements...');
+        setTimeout(() => {
+            const adminLangBtn = document.getElementById('adminLangBtn');
+            const adminLangDropdown = document.getElementById('adminLangDropdown');
+            console.log('Admin Lang Button:', adminLangBtn);
+            console.log('Admin Lang Dropdown:', adminLangDropdown);
+            console.log('Dropdown display style:', adminLangDropdown ? adminLangDropdown.style.display : 'not found');
+        }, 1000);
+    </script>
 </body>
 </html>

@@ -73,7 +73,7 @@ function loadUserProfile() {
 
   document.getElementById('userName').textContent = currentUser.fullName || 'N/A';
   document.getElementById('userMilID').textContent = currentUser.militaryId || 'N/A';
-  document.getElementById('profilePicture').src = currentUser.passportPicture || '../assets/default-avatar.png';
+  document.getElementById('profilePicture').src = currentUser.photoUrl || currentUser.passportPicture || '../assets/default-avatar.png';
   document.getElementById('statusText').textContent = currentUser.status || 'N/A';
 
   document.getElementById('detailFullName').textContent = currentUser.fullName || 'N/A';

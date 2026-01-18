@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head><title>Cookie Test</title></head>
+<body>
+<h1>Cookie Test</h1>
+<button onclick="setCookies()">Set Cookies</button>
+<button onclick="readCookies()">Read Cookies</button>
+<button onclick="navigateToDashboard()">Go to Dashboard</button>
+<pre id="output"></pre>
+
+<script>
+function setCookies() {
+  const expiryDate = new Date();
+  expiryDate.setDate(expiryDate.getDate() + 7);
+  document.cookie = `userToken=test123; expires=${expiryDate.toUTCString()}; path=/; SameSite=Strict`;
+  document.cookie = `currentUser=testuser; expires=${expiryDate.toUTCString()}; path=/; SameSite=Strict`;
+  document.getElementById('output').textContent = 'Cookies set!\n' + document.cookie;
+}
+
+function readCookies() {
+  document.getElementById('output').textContent = 'All cookies:\n' + document.cookie;
+}
+
+function navigateToDashboard() {
+  window.location.href = './pages/user-dashboard.html';
+}
+</script>
+</body>
+</html>

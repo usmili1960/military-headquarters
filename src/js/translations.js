@@ -284,7 +284,8 @@ function setupLanguageSwitcher() {
       langDropdown.style.display = langDropdown.style.display === 'none' ? 'block' : 'none';
     });
 
-    document.querySelectorAll('.lang-option').forEach((option) => {
+    // Only select options within this dropdown
+    langDropdown.querySelectorAll('.lang-option').forEach((option) => {
       option.addEventListener('click', (e) => {
         e.stopPropagation();
         const selectedLang = option.getAttribute('data-lang');
@@ -322,10 +323,13 @@ function setupLanguageSwitcher() {
 
     adminLangBtn.addEventListener('click', (e) => {
       e.stopPropagation();
+      console.log('Admin lang button clicked, current display:', adminLangDropdown.style.display);
       adminLangDropdown.style.display = adminLangDropdown.style.display === 'none' ? 'block' : 'none';
+      console.log('Admin lang dropdown now:', adminLangDropdown.style.display);
     });
 
-    document.querySelectorAll('.lang-option').forEach((option) => {
+    // Only select options within the admin dropdown
+    adminLangDropdown.querySelectorAll('.lang-option').forEach((option) => {
       option.addEventListener('click', (e) => {
         e.stopPropagation();
         const selectedLang = option.getAttribute('data-lang');
@@ -366,7 +370,8 @@ function setupLanguageSwitcher() {
       userLangDropdown.style.display = userLangDropdown.style.display === 'none' ? 'block' : 'none';
     });
 
-    document.querySelectorAll('.lang-option').forEach((option) => {
+    // Only select options within the user dropdown
+    userLangDropdown.querySelectorAll('.lang-option').forEach((option) => {
       option.addEventListener('click', (e) => {
         e.stopPropagation();
         const selectedLang = option.getAttribute('data-lang');

@@ -92,6 +92,7 @@ body {
 }
 
 .lang-dropdown {
+    display: none; /* Hidden by default */
     position: absolute;
     top: 100%;
     right: 0;
