@@ -323,9 +323,7 @@ function setupLanguageSwitcher() {
 
     adminLangBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      console.log('Admin lang button clicked, current display:', adminLangDropdown.style.display);
       adminLangDropdown.style.display = adminLangDropdown.style.display === 'none' ? 'block' : 'none';
-      console.log('Admin lang dropdown now:', adminLangDropdown.style.display);
     });
 
     // Only select options within the admin dropdown
