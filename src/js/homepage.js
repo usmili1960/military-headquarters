@@ -527,9 +527,10 @@ closeForgotPasswordModal.addEventListener('click', () => {
 });
 
 // Forgot Password Step 1 - Enter Military ID
-document.getElementById('forgotPasswordStep1Form').addEventListener('submit', (e) => {
+document.getElementById('forgotPasswordStep1Form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const militaryId = document.getElementById('forgotMilID').value.trim();
+  const submitBtn = e.target.querySelector('button[type="submit"]');
 
   // Validate Military ID format
   if (!militaryId.match(/^NSS-\d{6}$/)) {
@@ -537,82 +538,51 @@ document.getElementById('forgotPasswordStep1Form').addEventListener('submit', (e
     return;
   }
 
-  console.log('🔐 Looking up user with Military ID:', militaryId);
+  console.log('🔐 Requesting password reset for:', militaryId);
 
-  // Try to fetch user details from backend first, then fallback to localStorage
-  const userFoundPromise = fetch(`${API_BASE}/api/user/${militaryId}`)
-    .then((response) => {
-      if (response.ok) {
-        console.log('✅ User found in backend');
-        return response.json();
-      }
-      console.log('User not found in backend, trying localStorage...');
-      // Fallback to localStorage
-      const usersStr = localStorage.getItem('militaryUsers');
-      const users = usersStr ? JSON.parse(usersStr) : [];
-      const foundUser = users.find((u) => u.militaryId === militaryId);
-      if (foundUser) {
-        return foundUser;
-      }
-      throw new Error('User not found');
-    })
-    .catch((_lookupErr) => {
-      console.log('Backend lookup error, checking localStorage...');
-      // Fallback to localStorage
-      const usersStr = localStorage.getItem('militaryUsers');
-      const users = usersStr ? JSON.parse(usersStr) : [];
-      const foundUser = users.find((u) => u.militaryId === militaryId);
-      if (foundUser) {
-        return foundUser;
-      }
-      throw new Error('User not found');
+  try {
+    setButtonLoading(submitBtn, true);
+    showLoading('Verifying account...');
+
+    const response = await fetch(`${API_BASE}/api/auth/request-password-reset`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ militaryId }),
     });
 
-  userFoundPromise
-    .then((foundUser) => {
-      if (!foundUser) {
-        throw new Error('User not found');
-      }
+    const data = await response.json();
 
-      console.log('✅ User found:', foundUser);
+    if (!response.ok) {
+      throw new Error(data.error || 'User not found');
+    }
 
-      // Store user info for password reset
-      sessionStorage.setItem('resetPasswordUser', JSON.stringify({
-        militaryId: foundUser.militaryId,
-        email: foundUser.email,
-        mobile: foundUser.mobile,
-        fullName: foundUser.fullName,
-      }));
+    console.log('✅ Reset code generated:', data.code);
 
-      // Move to step 2 - Send verification code
-      document.getElementById('forgotPasswordStep1').style.display = 'none';
-      document.getElementById('forgotPasswordStep2').style.display = 'block';
+    // Store user info for password reset
+    sessionStorage.setItem('resetPasswordUser', JSON.stringify({
+      militaryId: militaryId,
+      email: data.email,
+      mobile: data.mobile,
+      resetCode: data.code, // Store for verification
+    }));
 
-      // Generate verification code
-      const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-      sessionStorage.setItem('resetPasswordCode', verificationCode);
+    // Move to step 2 - Show verification code
+    document.getElementById('forgotPasswordStep1').style.display = 'none';
+    document.getElementById('forgotPasswordStep2').style.display = 'block';
 
-      // Update message
-      document.getElementById('forgotPasswordStep2Message').textContent = `Verification code is being sent to: ${foundUser.email}`;
+    // Update message
+    document.getElementById('forgotPasswordStep2Message').textContent = 
+      `A 6-digit reset code has been generated. Code: ${data.code}`;
 
-      // Send verification code via email
-      sendPasswordResetCode(foundUser.email, foundUser.mobile, verificationCode);
+    alert(`Reset code: ${data.code}\n\n(In production, this will be sent via email/SMS)`);
 
-      // Show manual code entry after email is sent
-      setTimeout(() => {
-        document.getElementById('manualCodeEntry').style.display = 'block';
-        document.getElementById('emailSendingIndicator').style.display = 'none';
-      }, 3500);
-
-      // After 30 seconds, show SMS toggle button
-      setTimeout(() => {
-        document.getElementById('toggleSmsBtn').style.display = 'block';
-      }, 30000);
-    })
-    .catch((error) => {
-      console.error('❌ Error finding user:', error.message);
-      alert('User not found. Please check your Military ID and try again.');
-    });
+  } catch (error) {
+    console.error('❌ Error:', error.message);
+    alert(error.message || 'Failed to process request. Please try again.');
+  } finally {
+    setButtonLoading(submitBtn, false);
+    hideLoading();
+  }
 });
 
 // Toggle SMS option
@@ -640,26 +610,58 @@ document.getElementById('sendSmsBtn').addEventListener('click', () => {
 });
 
 // Verify password reset code
-document.getElementById('forgotPasswordVerificationForm').addEventListener('submit', (e) => {
+document.getElementById('forgotPasswordVerificationForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const enteredCode = document.getElementById('forgotVerificationCode').value.trim();
-  const correctCode = sessionStorage.getItem('resetPasswordCode');
+  const userData = JSON.parse(sessionStorage.getItem('resetPasswordUser'));
+  const submitBtn = e.target.querySelector('button[type="submit"]');
 
-  if (enteredCode !== correctCode) {
-    alert('Invalid verification code. Please try again.');
+  if (!enteredCode || enteredCode.length !== 6) {
+    alert('Please enter the 6-digit code');
     return;
   }
 
-  // Code is correct, move to step 3 - Reset password
-  document.getElementById('forgotPasswordStep2').style.display = 'none';
-  document.getElementById('forgotPasswordStep3').style.display = 'block';
+  try {
+    setButtonLoading(submitBtn, true);
+    showLoading('Verifying code...');
+
+    const response = await fetch(`${API_BASE}/api/auth/verify-reset-code`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        militaryId: userData.militaryId,
+        code: enteredCode,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Invalid code');
+    }
+
+    console.log('✅ Code verified successfully');
+
+    // Code is correct, move to step 3 - Reset password
+    document.getElementById('forgotPasswordStep2').style.display = 'none';
+    document.getElementById('forgotPasswordStep3').style.display = 'block';
+
+  } catch (error) {
+    console.error('❌ Verification error:', error.message);
+    alert(error.message || 'Invalid code. Please try again.');
+  } finally {
+    setButtonLoading(submitBtn, false);
+    hideLoading();
+  }
 });
 
 // Reset password form
-document.getElementById('resetPasswordForm').addEventListener('submit', (e) => {
+document.getElementById('resetPasswordForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const newPassword = document.getElementById('newPassword').value;
   const confirmPassword = document.getElementById('confirmNewPassword').value;
+  const userData = JSON.parse(sessionStorage.getItem('resetPasswordUser'));
+  const submitBtn = e.target.querySelector('button[type="submit"]');
 
   if (newPassword !== confirmPassword) {
     alert('Passwords do not match');
@@ -671,40 +673,53 @@ document.getElementById('resetPasswordForm').addEventListener('submit', (e) => {
     return;
   }
 
-  const userData = JSON.parse(sessionStorage.getItem('resetPasswordUser'));
+  try {
+    setButtonLoading(submitBtn, true);
+    showLoading('Resetting password...');
 
-  // Update password in backend
-  fetch(`${API_BASE}/api/user/${userData.militaryId}/reset-password`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      militaryId: userData.militaryId,
-      newPassword,
-    }),
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      console.log('✅ Password reset successfully:', data);
-      alert('Password has been reset successfully! You can now login with your new password.');
-
-      // Clear session storage
-      sessionStorage.removeItem('resetPasswordUser');
-      sessionStorage.removeItem('resetPasswordCode');
-
-      // Close modal
-      forgotPasswordModal.classList.remove('show');
-      forgotPasswordModal.style.display = 'none';
-
-      // Show login modal
-      loginModal.classList.add('show');
-      loginModal.style.display = 'flex';
-    })
-    .catch((error) => {
-      console.error('❌ Password reset error:', error);
-      alert('Failed to reset password. Please try again.');
+    const response = await fetch(`${API_BASE}/api/auth/reset-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        militaryId: userData.militaryId,
+        code: userData.resetCode,
+        newPassword,
+      }),
     });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Failed to reset password');
+    }
+
+    console.log('✅ Password reset successfully');
+    alert('Password has been reset successfully! You can now login with your new password.');
+
+    // Clear session storage
+    sessionStorage.removeItem('resetPasswordUser');
+
+    // Close modal
+    forgotPasswordModal.classList.remove('show');
+    forgotPasswordModal.style.display = 'none';
+
+    // Reset form and steps
+    document.getElementById('forgotPasswordStep1').style.display = 'block';
+    document.getElementById('forgotPasswordStep2').style.display = 'none';
+    document.getElementById('forgotPasswordStep3').style.display = 'none';
+    e.target.reset();
+
+    // Show login modal
+    loginModal.classList.add('show');
+    loginModal.style.display = 'flex';
+
+  } catch (error) {
+    console.error('❌ Password reset error:', error.message);
+    alert(error.message || 'Failed to reset password. Please try again.');
+  } finally {
+    setButtonLoading(submitBtn, false);
+    hideLoading();
+  }
 });
 
 // Function to send password reset code

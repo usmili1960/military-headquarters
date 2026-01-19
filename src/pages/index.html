@@ -7,6 +7,7 @@
     <link rel="icon" type="image/png" href="/images/USA_Legal_Affairs_Bureau_Logo_346fee20.png" />
     <link rel="stylesheet" href="../css/style.css" />
     <link rel="stylesheet" href="../css/homepage.css" />
+    <link rel="stylesheet" href="../css/loading.css" />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
@@ -501,7 +502,16 @@
       </p>
     </footer>
 
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+      <div>
+        <div class="spinner"></div>
+        <p class="loading-text">Please wait...</p>
+      </div>
+    </div>
+
     <script src="../js/translations.js"></script>
+    <script src="../js/loading-utils.js"></script>
     <script src="../js/homepage.js"></script>
     <script>
       // Language dropdown toggle

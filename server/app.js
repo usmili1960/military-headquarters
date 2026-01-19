@@ -23,6 +23,14 @@ const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/milita
 let mongoConnected = false;
 let userIdCounter = 1;
 
+// Store reset codes temporarily (in production, use Redis or DB)
+const resetCodes = new Map(); // { militaryId: { code, expiresAt, attempts } }
+
+// Rate limiting storage
+const loginAttempts = new Map(); // { identifier: { count, resetTime } }
+const RATE_LIMIT_WINDOW = 15 * 60 * 1000; // 15 minutes
+const MAX_ATTEMPTS = 5;
+
 // Connect to MongoDB
 const connectMongoDB = async () => {
   try {
@@ -150,6 +158,41 @@ const authenticateAdmin = (req, res, next) => {
     next();
   });
 };
+
+// Rate Limiting Middleware
+function checkRateLimit(identifier) {
+  const now = Date.now();
+  const attempt = loginAttempts.get(identifier);
+
+  if (!attempt) {
+    loginAttempts.set(identifier, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
+    return { allowed: true, remaining: MAX_ATTEMPTS - 1 };
+  }
+
+  // Reset if window expired
+  if (now > attempt.resetTime) {
+    loginAttempts.set(identifier, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
+    return { allowed: true, remaining: MAX_ATTEMPTS - 1 };
+  }
+
+  // Check if limit exceeded
+  if (attempt.count >= MAX_ATTEMPTS) {
+    const waitTime = Math.ceil((attempt.resetTime - now) / 60000);
+    return { 
+      allowed: false, 
+      remaining: 0,
+      waitTime: waitTime 
+    };
+  }
+
+  // Increment count
+  attempt.count++;
+  return { allowed: true, remaining: MAX_ATTEMPTS - attempt.count };
+}
+
+function resetRateLimit(identifier) {
+  loginAttempts.delete(identifier);
+}
 
 // ========================================
 // STATIC ROUTES
@@ -322,6 +365,15 @@ app.post('/api/auth/login', async (req, res) => {
 
     console.log('🔐 Login attempt:', { militaryId });
 
+    // Check rate limit
+    const rateLimit = checkRateLimit(militaryId);
+    if (!rateLimit.allowed) {
+      return res.status(429).json({
+        success: false,
+        error: `Too many login attempts. Please try again in ${rateLimit.waitTime} minutes.`,
+      });
+    }
+
     // Validate input
     if (!militaryId || !password) {
       return res.status(400).json({
@@ -355,8 +407,12 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(401).json({
         success: false,
         error: 'Incorrect password',
+        attemptsRemaining: rateLimit.remaining,
       });
     }
+
+    // Reset rate limit on successful login
+    resetRateLimit(militaryId);
 
     // Generate JWT token
     const token = jwt.sign(
@@ -412,6 +468,15 @@ app.post('/api/auth/admin-login', async (req, res) => {
 
     console.log('🔐 Admin login attempt:', { email });
 
+    // Check rate limit
+    const rateLimit = checkRateLimit(`admin_${email}`);
+    if (!rateLimit.allowed) {
+      return res.status(429).json({
+        success: false,
+        error: `Too many login attempts. Please try again in ${rateLimit.waitTime} minutes.`,
+      });
+    }
+
     // Validate input
     if (!email || !password) {
       return res.status(400).json({
@@ -428,6 +493,7 @@ app.post('/api/auth/admin-login', async (req, res) => {
       return res.status(401).json({
         success: false,
         error: 'Invalid credentials',
+        attemptsRemaining: rateLimit.remaining,
       });
     }
 
@@ -443,8 +509,12 @@ app.post('/api/auth/admin-login', async (req, res) => {
       return res.status(401).json({
         success: false,
         error: 'Invalid credentials',
+        attemptsRemaining: rateLimit.remaining,
       });
     }
+
+    // Reset rate limit on successful login
+    resetRateLimit(`admin_${email}`);
 
     // Check if admin is active
     if (!admin.isActive) {
@@ -624,7 +694,144 @@ app.put('/api/user/:militaryId', async (req, res) => {
   }
 });
 
-// Reset User Password
+// Request Password Reset - Step 1: Verify user and send code
+app.post('/api/auth/request-password-reset', async (req, res) => {
+  try {
+    if (!mongoConnected) {
+      return res.status(503).json({ error: 'Database unavailable' });
+    }
+
+    const { militaryId } = req.body;
+
+    if (!militaryId) {
+      return res.status(400).json({ error: 'Military ID is required' });
+    }
+
+    // Find user
+    const user = await User.findOne({ militaryId: militaryId.trim() });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Generate 6-digit code
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = Date.now() + 15 * 60 * 1000; // 15 minutes
+
+    // Store reset code
+    resetCodes.set(militaryId, {
+      code,
+      expiresAt,
+      attempts: 0,
+      userId: user._id,
+    });
+
+    console.log(`🔑 Password reset code for ${militaryId}:`, code);
+
+    return res.json({
+      success: true,
+      message: 'Reset code generated',
+      email: user.email,
+      mobile: user.mobile,
+      code: code, // In production, send via email/SMS instead
+    });
+  } catch (error) {
+    console.error('❌ Request reset error:', error);
+    return res.status(500).json({ error: 'Failed to process request' });
+  }
+});
+
+// Verify Reset Code - Step 2
+app.post('/api/auth/verify-reset-code', async (req, res) => {
+  try {
+    const { militaryId, code } = req.body;
+
+    if (!militaryId || !code) {
+      return res.status(400).json({ error: 'Military ID and code required' });
+    }
+
+    const resetData = resetCodes.get(militaryId);
+
+    if (!resetData) {
+      return res.status(404).json({ error: 'No reset request found' });
+    }
+
+    // Check expiration
+    if (Date.now() > resetData.expiresAt) {
+      resetCodes.delete(militaryId);
+      return res.status(400).json({ error: 'Reset code expired' });
+    }
+
+    // Check attempts
+    if (resetData.attempts >= 3) {
+      resetCodes.delete(militaryId);
+      return res.status(429).json({ error: 'Too many failed attempts' });
+    }
+
+    // Verify code
+    if (resetData.code !== code) {
+      resetData.attempts++;
+      return res.status(400).json({ 
+        error: 'Invalid code',
+        attemptsLeft: 3 - resetData.attempts 
+      });
+    }
+
+    return res.json({
+      success: true,
+      message: 'Code verified successfully',
+    });
+  } catch (error) {
+    return res.status(500).json({ error: 'Verification failed' });
+  }
+});
+
+// Reset Password - Step 3
+app.post('/api/auth/reset-password', async (req, res) => {
+  try {
+    if (!mongoConnected) {
+      return res.status(503).json({ error: 'Database unavailable' });
+    }
+
+    const { militaryId, code, newPassword } = req.body;
+
+    if (!militaryId || !code || !newPassword) {
+      return res.status(400).json({ error: 'All fields required' });
+    }
+
+    const resetData = resetCodes.get(militaryId);
+
+    if (!resetData || resetData.code !== code) {
+      return res.status(400).json({ error: 'Invalid or expired reset code' });
+    }
+
+    // Update password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    const user = await User.findByIdAndUpdate(
+      resetData.userId,
+      { password: hashedPassword },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Clear reset code
+    resetCodes.delete(militaryId);
+
+    console.log('✅ Password reset successfully for:', militaryId);
+
+    return res.json({
+      success: true,
+      message: 'Password has been reset successfully',
+    });
+  } catch (error) {
+    console.error('❌ Reset password error:', error);
+    return res.status(500).json({ error: 'Failed to reset password' });
+  }
+});
+
+// Reset User Password (Old endpoint - kept for compatibility)
 app.post('/api/user/:militaryId/reset-password', async (req, res) => {
   try {
     if (!mongoConnected) {
