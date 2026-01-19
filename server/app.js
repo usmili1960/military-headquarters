@@ -108,8 +108,8 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
 }));
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(express.static(path.join(__dirname, '../src')));
 app.use('/images', express.static(path.join(__dirname, '../images')));
 app.use('/assets', express.static(path.join(__dirname, '../src/assets')));

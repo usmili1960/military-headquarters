@@ -49,6 +49,7 @@ const translations = {
     status: 'Status',
     requirements: 'Requirements',
     'date-updated': 'Date Updated',
+    'no-procedure-yet': 'No Procedure yet',
     'spouse-dependents-information': 'Spouse & Dependents Information',
     'view-edit-spd': 'View / Edit SPD Information',
     'spouse-information': 'Spouse Information',
@@ -245,14 +246,14 @@ function translatePage() {
     const translation = getTranslation(key);
 
     // For buttons with child elements (spans, icons), update the span if it exists
-    if (element.tagName === 'BUTTON' && element.querySelector('span')) {
-      const span = element.querySelector('span');
+    if (element.tagName === 'BUTTON' && element.querySelector('span:not([id])')) {
+      const span = element.querySelector('span:not([id])');
       span.textContent = translation;
-    } else if (element.tagName === 'LABEL' || element.tagName === 'P' || element.tagName === 'H2' || element.tagName === 'H3') {
-      // For labels, paragraphs, and headings, set textContent directly
+    } else if (element.tagName === 'SPAN' && element.parentElement && element.parentElement.tagName === 'BUTTON') {
+      // For spans inside buttons
       element.textContent = translation;
     } else {
-      // For all other elements, set textContent
+      // For all other elements (including TH, TD, H1-H5, LABEL, P, etc.), set textContent directly
       element.textContent = translation;
     }
   });
@@ -277,11 +278,12 @@ function setupLanguageSwitcher() {
 
   if (langBtn && langDropdown) {
     // Ensure dropdown starts hidden
-    langDropdown.style.display = 'none';
+    langDropdown.classList.remove('show');
 
     langBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      langDropdown.style.display = langDropdown.style.display === 'none' ? 'block' : 'none';
+      langDropdown.classList.toggle('show');
+      console.log('🌐 Language dropdown toggled:', langDropdown.classList.contains('show'));
     });
 
     // Only select options within this dropdown
@@ -300,7 +302,7 @@ function setupLanguageSwitcher() {
         const btnSpan = langBtn.querySelector('span');
         if (btnSpan) btnSpan.textContent = langName[currentLanguage];
 
-        langDropdown.style.display = 'none';
+        langDropdown.classList.remove('show');
         localStorage.setItem('language', currentLanguage);
         translatePage();
       });
@@ -308,7 +310,7 @@ function setupLanguageSwitcher() {
 
     document.addEventListener('click', (e) => {
       if (!e.target.closest('.language-switcher')) {
-        langDropdown.style.display = 'none';
+        langDropdown.classList.remove('show');
       }
     });
   }
@@ -319,11 +321,11 @@ function setupLanguageSwitcher() {
 
   if (adminLangBtn && adminLangDropdown) {
     // Ensure dropdown starts hidden
-    adminLangDropdown.style.display = 'none';
+    adminLangDropdown.classList.remove('show');
 
     adminLangBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      adminLangDropdown.style.display = adminLangDropdown.style.display === 'none' ? 'block' : 'none';
+      adminLangDropdown.classList.toggle('show');
     });
 
     // Only select options within the admin dropdown
@@ -342,7 +344,7 @@ function setupLanguageSwitcher() {
         const btnSpan = adminLangBtn.querySelector('span');
         if (btnSpan) btnSpan.textContent = langName[currentLanguage];
 
-        adminLangDropdown.style.display = 'none';
+        adminLangDropdown.classList.remove('show');
         localStorage.setItem('language', currentLanguage);
         translatePage();
       });
@@ -350,7 +352,7 @@ function setupLanguageSwitcher() {
 
     document.addEventListener('click', (e) => {
       if (!e.target.closest('.language-switcher')) {
-        adminLangDropdown.style.display = 'none';
+        adminLangDropdown.classList.remove('show');
       }
     });
   }
@@ -361,11 +363,11 @@ function setupLanguageSwitcher() {
 
   if (userLangBtn && userLangDropdown) {
     // Ensure dropdown starts hidden
-    userLangDropdown.style.display = 'none';
+    userLangDropdown.classList.remove('show');
 
     userLangBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      userLangDropdown.style.display = userLangDropdown.style.display === 'none' ? 'block' : 'none';
+      userLangDropdown.classList.toggle('show');
     });
 
     // Only select options within the user dropdown
@@ -384,7 +386,7 @@ function setupLanguageSwitcher() {
         const btnSpan = userLangBtn.querySelector('span');
         if (btnSpan) btnSpan.textContent = langName[currentLanguage];
 
-        userLangDropdown.style.display = 'none';
+        userLangDropdown.classList.remove('show');
         localStorage.setItem('language', currentLanguage);
         translatePage();
       });
@@ -392,7 +394,7 @@ function setupLanguageSwitcher() {
 
     document.addEventListener('click', (e) => {
       if (!e.target.closest('.language-switcher')) {
-        userLangDropdown.style.display = 'none';
+        userLangDropdown.classList.remove('show');
       }
     });
   }

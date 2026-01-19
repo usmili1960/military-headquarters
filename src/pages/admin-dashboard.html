@@ -370,6 +370,52 @@
 
     <script src="../js/translations.js"></script>
     <script src="../js/admin-dashboard.js"></script>
+    <script>
+      // Language dropdown toggle
+      document.addEventListener('DOMContentLoaded', function() {
+        const adminLangBtn = document.getElementById('adminLangBtn');
+        const adminLangDropdown = document.getElementById('adminLangDropdown');
+        
+        if (adminLangBtn && adminLangDropdown) {
+          adminLangBtn.onclick = function(e) {
+            e.stopPropagation();
+            adminLangDropdown.style.display = adminLangDropdown.style.display === 'block' ? 'none' : 'block';
+          };
+          
+          // Handle language selection
+          adminLangDropdown.querySelectorAll('.lang-option').forEach(function(option) {
+            option.onclick = function(e) {
+              e.stopPropagation();
+              const selectedLang = this.getAttribute('data-lang');
+              currentLanguage = selectedLang;
+              
+              const langNames = {
+                en: 'English',
+                ja: '日本語',
+                es: 'Español',
+                ko: '한국어'
+              };
+              
+              const btnSpan = adminLangBtn.querySelector('span');
+              if (btnSpan) btnSpan.textContent = langNames[currentLanguage];
+              
+              adminLangDropdown.style.display = 'none';
+              localStorage.setItem('language', currentLanguage);
+              
+              if (typeof translatePage === 'function') {
+                translatePage();
+              }
+            };
+          });
+          
+          document.onclick = function(e) {
+            if (!e.target.closest('.language-switcher')) {
+              adminLangDropdown.style.display = 'none';
+            }
+          };
+        }
+      });
+    </script>
 
 </body>
 </html>

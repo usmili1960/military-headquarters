@@ -18,7 +18,7 @@
         </div>
 
         <div class="header-center">
-            <h1>User Profile Dashboard</h1>
+            <h1 data-i18n="user-profile-dashboard">User Profile Dashboard</h1>
         </div>
 
         <div class="header-right">
@@ -30,11 +30,11 @@
                 <div class="user-menu-dropdown hidden-display" id="userMenuDropdown">
                     <button class="menu-option" id="viewSpdBtn">
                         <i class="fas fa-file-alt"></i>
-                        View/Edit SPD Information
+                        <span data-i18n="view-edit-spd">View/Edit SPD Information</span>
                     </button>
                     <button class="menu-option" id="userLogoutBtn">
                         <i class="fas fa-sign-out-alt"></i>
-                        Logout
+                        <span data-i18n="logout">Logout</span>
                     </button>
                 </div>
             </div>
@@ -45,7 +45,7 @@
                     <i class="fas fa-globe"></i>
                     <span>English</span>
                 </button>
-                <div class="lang-dropdown hidden-display" id="userLangDropdown">
+                <div class="lang-dropdown" id="userLangDropdown">
                     <button class="lang-option" data-lang="en">English</button>
                     <button class="lang-option" data-lang="ja">日本語 (Japanese)</button>
                     <button class="lang-option" data-lang="es">Español (Spanish)</button>
@@ -81,34 +81,34 @@
                 </div>
 
                 <div class="profile-details">
-                    <h3>User Profile Information</h3>
+                    <h3 data-i18n="user-profile-information">User Profile Information</h3>
                     <div class="details-grid">
                         <div class="detail-item">
-                            <label>Full Name</label>
+                            <label data-i18n="full-name">Full Name</label>
                             <p id="detailFullName">-</p>
                         </div>
                         <div class="detail-item">
-                            <label>Email Address</label>
+                            <label data-i18n="email">Email Address</label>
                             <p id="detailEmail">-</p>
                         </div>
                         <div class="detail-item">
-                            <label>Mobile Number</label>
+                            <label data-i18n="mobile">Mobile Number</label>
                             <p id="detailMobile">-</p>
                         </div>
                         <div class="detail-item">
-                            <label>Date of Birth</label>
+                            <label data-i18n="date-of-birth">Date of Birth</label>
                             <p id="detailDOB">-</p>
                         </div>
                         <div class="detail-item">
-                            <label>Military ID</label>
+                            <label data-i18n="military-id">Military ID</label>
                             <p id="detailMilID">-</p>
                         </div>
                         <div class="detail-item">
-                            <label>Rank</label>
+                            <label data-i18n="rank">Rank</label>
                             <p id="detailRank">-</p>
                         </div>
                         <div class="detail-item">
-                            <label>Account Status</label>
+                            <label data-i18n="account-status">Account Status</label>
                             <p id="detailStatus">-</p>
                         </div>
                     </div>
@@ -117,20 +117,20 @@
 
             <!-- Procedures Section -->
             <section class="procedures-section">
-                <h2>List of Procedures</h2>
+                <h2 data-i18n="list-of-procedures">List of Procedures</h2>
                 <div class="procedures-table-container">
                     <table class="procedures-table">
                         <thead>
                             <tr>
-                                <th>Procedure Name</th>
-                                <th>Status</th>
-                                <th>Requirements</th>
-                                <th>Date Updated</th>
+                                <th data-i18n="procedure-name">Procedure Name</th>
+                                <th data-i18n="status">Status</th>
+                                <th data-i18n="requirements">Requirements</th>
+                                <th data-i18n="date-updated">Date Updated</th>
                             </tr>
                         </thead>
                         <tbody id="proceduresTableBody">
                             <tr>
-                                <td colspan="4" class="no-procedures-msg">No Procedure yet</td>
+                                <td colspan="4" class="no-procedures-msg" data-i18n="no-procedure-yet">No Procedure yet</td>
                             </tr>
                         </tbody>
                     </table>
@@ -145,7 +145,7 @@
     <div class="modal" id="spouseModal">
         <div class="modal-content spouse-modal">
             <span class="close" id="closeSpouseModal">&times;</span>
-            <h2 class="spouse-title">Spouse Information</h2>
+            <h2 class="spouse-title" data-i18n="spouse-information">Spouse Information</h2>
 
             <!-- Notification Icon -->
             <div class="spouse-header-controls">
@@ -161,10 +161,10 @@
             <!-- Spouse Details Form -->
             <form id="spouseForm" class="spouse-form">
                 <div class="form-section">
-                    <h3>Spouse Details (Admin Only - Read Only)</h3>
+                    <h3 data-i18n="spouse-details-admin">Spouse Details (Admin Only - Read Only)</h3>
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Passport Picture</label>
+                            <label data-i18n="profile-picture">Passport Picture</label>
                             <div class="file-upload-display" id="spousePassportDisplay">
                                 <img src="/assets/default-avatar.png" alt="Spouse Passport" class="passport-preview">
                                 <p>No document uploaded</p>
@@ -174,49 +174,49 @@
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="spouseFullName">Full Name</label>
+                            <label for="spouseFullName" data-i18n="full-name">Full Name</label>
                             <input type="text" id="spouseFullName" name="fullName" readonly>
                         </div>
                         <div class="form-group">
-                            <label for="spouseMobile">Mobile Number</label>
+                            <label for="spouseMobile" data-i18n="mobile">Mobile Number</label>
                             <input type="tel" id="spouseMobile" name="mobile" readonly>
                         </div>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="spouseDOB">Date of Birth</label>
+                            <label for="spouseDOB" data-i18n="date-of-birth">Date of Birth</label>
                             <input type="date" id="spouseDOB" name="dob" readonly>
                         </div>
                         <div class="form-group">
-                            <label for="spouseOccupation">Occupation</label>
+                            <label for="spouseOccupation" data-i18n="occupation">Occupation</label>
                             <input type="text" id="spouseOccupation" name="occupation" readonly>
                         </div>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="spouseAddress">Full Address</label>
+                            <label for="spouseAddress" data-i18n="full-address">Full Address</label>
                             <input type="text" id="spouseAddress" name="address" readonly>
                         </div>
                         <div class="form-group">
-                            <label for="spouseEmail">Email Address</label>
+                            <label for="spouseEmail" data-i18n="email">Email Address</label>
                             <input type="email" id="spouseEmail" name="email" readonly>
                         </div>
                     </div>
                 </div>
 
                 <div class="form-section">
-                    <h3>Driver's License (User Upload)</h3>
-                    <p class="form-hint">Upload both sides of spouse's driver's license</p>
+                    <h3 data-i18n="driver-license">Driver's License (User Upload)</h3>
+                    <p class="form-hint" data-i18n="upload-both-sides">Upload both sides of spouse's driver's license</p>
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="spouseDriverLicenseFront">Front Side</label>
+                            <label for="spouseDriverLicenseFront" data-i18n="front-side">Front Side</label>
                             <input type="file" id="spouseDriverLicenseFront" name="driverLicenseFront" accept="image/*">
                             <div class="file-preview" id="driverLicenseFrontPreview"></div>
                         </div>
                         <div class="form-group">
-                            <label for="spouseDriverLicenseBack">Back Side</label>
+                            <label for="spouseDriverLicenseBack" data-i18n="back-side">Back Side</label>
                             <input type="file" id="spouseDriverLicenseBack" name="driverLicenseBack" accept="image/*">
                             <div class="file-preview" id="driverLicenseBackPreview"></div>
                         </div>
@@ -224,8 +224,8 @@
                 </div>
 
                 <div class="spouse-modal-footer">
-                    <button type="button" class="btn btn-secondary" id="goBackBtn">Go Back</button>
-                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <button type="button" class="btn btn-secondary" id="goBackBtn" data-i18n="go-back">Go Back</button>
+                    <button type="submit" class="btn btn-primary" data-i18n="save-changes">Save Changes</button>
                 </div>
             </form>
         </div>
@@ -234,11 +234,11 @@
     <!-- Logout Confirmation Modal -->
     <div class="modal" id="logoutModal">
         <div class="modal-content logout-modal">
-            <h2>Confirm Logout</h2>
-            <p>Are you sure you want to logout, <span id="logoutUsername">User</span>?</p>
+            <h2 data-i18n="confirm-logout">Confirm Logout</h2>
+            <p data-i18n="logout-message">Are you sure you want to logout, <span id="logoutUsername">User</span>?</p>
             <div class="logout-buttons">
-                <button class="btn btn-primary" id="confirmLogoutBtn">YES</button>
-                <button class="btn btn-secondary" id="cancelLogoutBtn">NO</button>
+                <button class="btn btn-primary" id="confirmLogoutBtn" data-i18n="yes">YES</button>
+                <button class="btn btn-secondary" id="cancelLogoutBtn" data-i18n="no">NO</button>
             </div>
         </div>
     </div>
@@ -249,5 +249,51 @@
 
     <script src="../js/translations.js"></script>
     <script src="../js/user-dashboard.js"></script>
+    <script>
+      // Language dropdown toggle
+      document.addEventListener('DOMContentLoaded', function() {
+        const userLangBtn = document.getElementById('userLangBtn');
+        const userLangDropdown = document.getElementById('userLangDropdown');
+        
+        if (userLangBtn && userLangDropdown) {
+          userLangBtn.onclick = function(e) {
+            e.stopPropagation();
+            userLangDropdown.style.display = userLangDropdown.style.display === 'block' ? 'none' : 'block';
+          };
+          
+          // Handle language selection
+          userLangDropdown.querySelectorAll('.lang-option').forEach(function(option) {
+            option.onclick = function(e) {
+              e.stopPropagation();
+              const selectedLang = this.getAttribute('data-lang');
+              currentLanguage = selectedLang;
+              
+              const langNames = {
+                en: 'English',
+                ja: '日本語',
+                es: 'Español',
+                ko: '한국어'
+              };
+              
+              const btnSpan = userLangBtn.querySelector('span');
+              if (btnSpan) btnSpan.textContent = langNames[currentLanguage];
+              
+              userLangDropdown.style.display = 'none';
+              localStorage.setItem('language', currentLanguage);
+              
+              if (typeof translatePage === 'function') {
+                translatePage();
+              }
+            };
+          });
+          
+          document.onclick = function(e) {
+            if (!e.target.closest('.language-switcher')) {
+              userLangDropdown.style.display = 'none';
+            }
+          };
+        }
+      });
+    </script>
 </body>
 </html>

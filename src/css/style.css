@@ -99,10 +99,18 @@ body {
     background-color: var(--white);
     border: 1px solid var(--border-color);
     border-radius: 8px;
-    min-width: 150px;
-    z-index: 1000;
+    min-width: 200px;
+    z-index: 10000;
     margin-top: 10px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.lang-dropdown.show {
+    display: block !important;
+}
+
+.language-switcher .lang-dropdown.show {
+    display: block !important;
 }
 
 .lang-option {
@@ -115,10 +123,19 @@ body {
     cursor: pointer;
     transition: all 0.2s ease;
     font-size: 14px;
+    color: var(--dark-text);
 }
 
 .lang-option:hover {
     background-color: var(--light-bg);
+}
+
+.lang-option:first-child {
+    border-radius: 8px 8px 0 0;
+}
+
+.lang-option:last-child {
+    border-radius: 0 0 8px 8px;
 }
 
 /* Login Button */
