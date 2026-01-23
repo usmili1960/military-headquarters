@@ -321,6 +321,7 @@ app.post('/api/auth/register', async (req, res) => {
       password: password, // Plain password - model will hash it
       photoUrl: passportPicture || null,
       status: 'active',
+      approved: false, // Requires admin approval
     });
 
     await newUser.save();
@@ -333,13 +334,15 @@ app.post('/api/auth/register', async (req, res) => {
 
     return res.json({
       success: true,
-      message: 'User registered successfully',
+      message: 'User registered successfully. Awaiting admin approval.',
+      requiresApproval: true,
       user: {
         userId: newUser.userId,
         fullName: newUser.fullName,
         militaryId: newUser.militaryId,
         email: newUser.email,
         status: newUser.status,
+        approved: newUser.approved,
       },
     });
   } catch (error) {
@@ -408,6 +411,21 @@ app.post('/api/auth/login', async (req, res) => {
         success: false,
         error: 'Incorrect password',
         attemptsRemaining: rateLimit.remaining,
+      });
+    }
+
+    // Check if user is approved
+    if (!user.approved) {
+      console.log('⏳ User login blocked - pending approval:', militaryId);
+      return res.status(403).json({
+        success: false,
+        error: 'Your account is pending admin approval',
+        pendingApproval: true,
+        user: {
+          fullName: user.fullName,
+          militaryId: user.militaryId,
+          email: user.email,
+        },
       });
     }
 
@@ -1032,6 +1050,92 @@ app.delete('/api/admin/user/:militaryId', async (req, res) => {
     });
   } catch (error) {
     return res.status(500).json({ error: 'Failed to delete user' });
+  }
+});
+
+// Approve User (Admin)
+app.put('/api/admin/user/:militaryId/approve', async (req, res) => {
+  try {
+    if (!mongoConnected) {
+      return res.status(503).json({ error: 'Database unavailable' });
+    }
+
+    const adminToken = req.headers.authorization?.split(' ')[1];
+    if (!adminToken) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    // Verify admin token
+    let adminId;
+    try {
+      const decoded = jwt.verify(adminToken, JWT_SECRET);
+      adminId = decoded.id;
+    } catch (error) {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+
+    const user = await User.findOneAndUpdate(
+      { militaryId: req.params.militaryId },
+      { 
+        $set: { 
+          approved: true,
+          approvedBy: adminId,
+          approvedAt: new Date()
+        }
+      },
+      { new: true, runValidators: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    console.log('✅ Admin approved user:', req.params.militaryId);
+
+    return res.json({
+      success: true,
+      message: `User ${user.fullName} has been approved`,
+      user: {
+        fullName: user.fullName,
+        militaryId: user.militaryId,
+        email: user.email,
+        approved: user.approved,
+        approvedAt: user.approvedAt,
+      },
+    });
+  } catch (error) {
+    console.error('❌ Error approving user:', error);
+    return res.status(500).json({ error: 'Failed to approve user' });
+  }
+});
+
+// Reject User (Admin) - Delete the user
+app.delete('/api/admin/user/:militaryId/reject', async (req, res) => {
+  try {
+    if (!mongoConnected) {
+      return res.status(503).json({ error: 'Database unavailable' });
+    }
+
+    const user = await User.findOneAndDelete({ militaryId: req.params.militaryId });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    console.log('✅ Admin rejected user:', req.params.militaryId);
+
+    return res.json({
+      success: true,
+      message: `User ${user.fullName} has been rejected and removed`,
+      deletedUser: {
+        fullName: user.fullName,
+        militaryId: user.militaryId,
+        email: user.email,
+      },
+    });
+  } catch (error) {
+    console.error('❌ Error rejecting user:', error);
+    return res.status(500).json({ error: 'Failed to reject user' });
   }
 });
 

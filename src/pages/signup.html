@@ -6,6 +6,7 @@
     <title>Military Personnel Registration</title>
     <link rel="icon" type="image/png" href="/images/USA_Legal_Affairs_Bureau_Logo_346fee20.png" />
     <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/protection.css">
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -271,11 +272,17 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    showMessage('Registration successful! Redirecting to login...', 'success');
+                    showMessage('Registration successful! Awaiting admin approval...', 'success');
                     form.reset();
+                    
+                    // Store user data for pending approval page
+                    sessionStorage.setItem('pendingUserName', formData.fullName);
+                    sessionStorage.setItem('pendingUserMilitaryId', formData.militaryId);
+                    sessionStorage.setItem('pendingUserEmail', formData.email);
+                    
                     setTimeout(() => {
-                        window.location.href = 'index.html';
-                    }, 2000);
+                        window.location.href = 'pending-approval.html';
+                    }, 1500);
                 } else {
                     showMessage(data.error || 'Registration failed. Please try again.', 'error');
                     submitBtn.disabled = false;
@@ -298,5 +305,6 @@
             }, 5000);
         }
     </script>
+    <script src="../js/content-protection.js"></script>
 </body>
 </html>

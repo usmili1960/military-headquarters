@@ -326,6 +326,35 @@ verificationForm.addEventListener('submit', (e) => {
 
       console.log('✅ User registered successfully:', data.user);
 
+      // Check if user requires approval
+      if (data.requiresApproval || (data.user && data.user.approved === false)) {
+        console.log('⏳ User requires admin approval');
+        
+        // Store user data for pending approval page
+        sessionStorage.setItem('pendingUserName', data.user.fullName);
+        sessionStorage.setItem('pendingUserMilitaryId', data.user.militaryId);
+        sessionStorage.setItem('pendingUserEmail', data.user.email);
+        
+        // Clear forms
+        userSignupForm.reset();
+        verificationForm.reset();
+        sessionStorage.removeItem('signupData');
+        
+        // Close modal
+        verificationModal.classList.remove('show');
+        verificationModal.style.display = 'none';
+        
+        alert('Account created successfully! Your account is pending admin approval.\n\nYou will be redirected to the status page.');
+        
+        // Redirect to pending approval page
+        setTimeout(() => {
+          window.location.href = './pages/pending-approval.html';
+        }, 1000);
+        
+        return; // Stop further execution
+      }
+
+      // Legacy code for backward compatibility (if approval not required)
       // Save to localStorage as backup
       const usersStr = localStorage.getItem('militaryUsers');
       const users = usersStr ? JSON.parse(usersStr) : [];
@@ -472,6 +501,21 @@ userLoginForm.addEventListener('submit', (e) => {
       console.log('✅ Login response:', data);
       if (!data.success) {
         console.log('Backend returned success: false -', data.error);
+        
+        // Check if account is pending approval
+        if (data.pendingApproval) {
+          console.log('⏳ Account pending approval');
+          
+          // Store user data for pending page
+          sessionStorage.setItem('pendingUserName', data.user.fullName);
+          sessionStorage.setItem('pendingUserMilitaryId', data.user.militaryId);
+          sessionStorage.setItem('pendingUserEmail', data.user.email);
+          
+          alert('Your account is pending admin approval. You will be redirected to the status page.');
+          window.location.href = './pages/pending-approval.html';
+          return;
+        }
+        
         throw new Error(data.error || 'Backend login failed');
       }
 

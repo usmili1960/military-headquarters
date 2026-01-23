@@ -69,8 +69,8 @@ window.addEventListener('load', async () => {
   // Load users from backend
   fetchAndLoadUsers();
 
-  // Auto-refresh users list every 5 seconds
-  setInterval(fetchAndLoadUsers, 5000);
+  // Auto-refresh users list every 30 seconds (reduced from 5 to improve performance)
+  setInterval(fetchAndLoadUsers, 30000);
 });
 
 // Modal elements
@@ -195,18 +195,23 @@ function fetchAndLoadUsers() {
       }
     })
     .catch((error) => {
-      console.log('❌ Backend API error:', error.message);
-      console.log('⚠️ Could not load users from backend');
+      console.error('❌ Backend API error:', error.message);
+      console.error('⚠️ Could not load users from backend');
       
-      // Show mock users as fallback
-      allFetchedUsers = mockUsers;
-      loadUsersTable(allFetchedUsers);
-      console.log('✅ Showing mock users:', allFetchedUsers.length, 'users');
+      // Don't show mock users - show error message instead
+      allFetchedUsers = [];
+      loadUsersTable([]);
+      
+      // Show error notification
+      const tbody = document.getElementById('usersTableBody');
+      if (tbody) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 20px; color: red;"><i class="fas fa-exclamation-triangle"></i> Error loading users. Please refresh the page.</td></tr>';
+      }
     });
 }
 
 // Load users table
-function loadUsersTable(users = mockUsers) {
+function loadUsersTable(users = []) {
   console.log('📋 loadUsersTable called with', users.length, 'users');
   const tbody = document.getElementById('usersTableBody');
 
@@ -219,7 +224,7 @@ function loadUsersTable(users = mockUsers) {
 
   if (!users || users.length === 0) {
     console.log('⚠️ No users to display');
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px;">No users found</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 20px;">No users found</td></tr>';
     return;
   }
 
@@ -235,6 +240,30 @@ function loadUsersTable(users = mockUsers) {
     const rank = user.rank || 'N/A';
     const created = user.accountCreated || 'N/A';
     const picture = user.photoUrl || user.passportPicture || '../assets/default-avatar.png';
+    const approved = user.approved !== undefined ? user.approved : false;
+
+    // Log approval status for debugging
+    console.log(`User ${user.militaryId}: approved field = ${user.approved}, evaluated as: ${approved}`);
+
+    // Approval status badge
+    const approvalBadge = approved 
+      ? '<span class="status-badge active"><span class="status-dot"></span>APPROVED</span>'
+      : '<span class="status-badge inactive"><span class="status-dot"></span>PENDING</span>';
+
+    // Action buttons - different for pending vs approved users
+    const actionButtons = approved
+      ? `<div class="action-buttons">
+          <button class="action-btn" onclick="viewUserDetail('${user.militaryId}')">View</button>
+          <button class="action-btn" onclick="editUser('${user.militaryId}')">Edit</button>
+        </div>`
+      : `<div class="action-buttons">
+          <button class="action-btn" style="background: #28a745; color: white;" onclick="approveUser('${user.militaryId}')">
+            <i class="fas fa-check"></i> Approve
+          </button>
+          <button class="action-btn" style="background: #dc3545; color: white;" onclick="rejectUser('${user.militaryId}')">
+            <i class="fas fa-times"></i> Reject
+          </button>
+        </div>`;
 
     row.innerHTML = `
             <td><img src="${picture}" alt="Profile" class="user-avatar" style="cursor: pointer;" onclick="openImageViewer('${picture}')"></td>
@@ -247,13 +276,9 @@ function loadUsersTable(users = mockUsers) {
                     ${status}
                 </span>
             </td>
+            <td>${approvalBadge}</td>
             <td>${created}</td>
-            <td>
-                <div class="action-buttons">
-                    <button class="action-btn" onclick="viewUserDetail('${user.militaryId}')">View</button>
-                    <button class="action-btn" onclick="editUser('${user.militaryId}')">Edit</button>
-                </div>
-            </td>
+            <td>${actionButtons}</td>
         `;
     tbody.appendChild(row);
   });
@@ -266,7 +291,7 @@ const userSearchInput = document.getElementById('userSearch');
 if (userSearchInput) {
   userSearchInput.addEventListener('input', (e) => {
     const searchTerm = (e.target.value || '').toLowerCase();
-    const usersToSearch = allFetchedUsers.length > 0 ? allFetchedUsers : mockUsers;
+    const usersToSearch = allFetchedUsers || [];
     const filtered = usersToSearch.filter((user) => user && user.fullName && user.militaryId
             && (user.fullName.toLowerCase().includes(searchTerm)
             || user.militaryId.toLowerCase().includes(searchTerm)));
@@ -276,7 +301,7 @@ if (userSearchInput) {
 
 // View user detail
 function viewUserDetail(militaryId) {
-  const usersToSearch = allFetchedUsers.length > 0 ? allFetchedUsers : mockUsers;
+  const usersToSearch = allFetchedUsers || [];
   const user = usersToSearch.find((u) => u.militaryId === militaryId);
   if (!user) return;
 
@@ -370,7 +395,7 @@ document.getElementById('deleteUserBtn')?.addEventListener('click', () => {
 
 // Delete user function
 function deleteUser(userId) {
-  const usersToSearch = allFetchedUsers.length > 0 ? allFetchedUsers : mockUsers;
+  const usersToSearch = allFetchedUsers || [];
   const user = usersToSearch.find((u) => u.id === userId);
   if (!user) return;
 
@@ -427,7 +452,7 @@ function updateStatusLabel() {
 function deleteProcedure(militaryId, procedureIndex) {
   // eslint-disable-next-line no-alert
   if (confirm('Are you sure you want to delete this procedure? This action cannot be undone.')) {
-    const user = mockUsers.find((u) => u.militaryId === militaryId);
+    const user = (allFetchedUsers || []).find((u) => u.militaryId === militaryId);
     if (user && user.procedures) {
       user.procedures.splice(procedureIndex, 1);
       displayUserProcedures(user);
@@ -612,7 +637,8 @@ function openSpouseEditModal() {
   const usersList = document.getElementById('spouseUsersList');
   usersList.innerHTML = '';
 
-  mockUsers.forEach((user) => {
+  const users = allFetchedUsers || [];
+  users.forEach((user) => {
     const item = document.createElement('div');
     item.className = 'spouse-user-item';
     item.innerHTML = `
@@ -669,7 +695,8 @@ function openUserProceduresModal() {
   const usersList = document.getElementById('procedureUsersList');
   usersList.innerHTML = '';
 
-  mockUsers.forEach((user) => {
+  const users = allFetchedUsers || [];
+  users.forEach((user) => {
     const item = document.createElement('div');
     item.className = 'procedure-user-item';
     item.innerHTML = `
@@ -831,4 +858,96 @@ document.addEventListener('keydown', (e) => {
     document.body.style.overflow = 'auto';
   }
 });
+
+// Approve user account
+async function approveUser(militaryId) {
+  if (!confirm(`Are you sure you want to APPROVE this user account?\n\nMilitary ID: ${militaryId}\n\nThe user will be able to log in and access their dashboard.`)) {
+    return;
+  }
+
+  const adminToken = getCookie('adminToken');
+  if (!adminToken) {
+    alert('Authentication required. Please log in again.');
+    window.location.href = './admin-login.html';
+    return;
+  }
+
+  try {
+    console.log(`🔄 Approving user: ${militaryId}`);
+
+    const response = await fetch(`${API_BASE}/api/admin/user/${militaryId}/approve`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${adminToken}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const data = await response.json();
+
+    if (response.ok && data.success) {
+      console.log('✅ User approved successfully:', data);
+      alert(`✅ User approved successfully!\n\n${data.user.fullName} can now log in to their account.`);
+      
+      // Refresh the users list
+      fetchAndLoadUsers();
+    } else {
+      console.error('❌ Approval failed:', data);
+      alert(`Failed to approve user: ${data.error || 'Unknown error'}`);
+    }
+  } catch (error) {
+    console.error('❌ Error approving user:', error);
+    alert(`Error: ${error.message}`);
+  }
+}
+
+// Reject user account (delete)
+async function rejectUser(militaryId) {
+  const usersToSearch = allFetchedUsers || [];
+  const user = usersToSearch.find((u) => u.militaryId === militaryId);
+  
+  if (!user) {
+    alert('User not found');
+    return;
+  }
+
+  if (!confirm(`Are you sure you want to REJECT and DELETE this user account?\n\nUser: ${user.fullName}\nMilitary ID: ${militaryId}\n\n⚠️ THIS ACTION CANNOT BE UNDONE!\n\nThe user will be permanently removed from the system.`)) {
+    return;
+  }
+
+  const adminToken = getCookie('adminToken');
+  if (!adminToken) {
+    alert('Authentication required. Please log in again.');
+    window.location.href = './admin-login.html';
+    return;
+  }
+
+  try {
+    console.log(`🗑️ Rejecting and deleting user: ${militaryId}`);
+
+    const response = await fetch(`${API_BASE}/api/admin/user/${militaryId}/reject`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${adminToken}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const data = await response.json();
+
+    if (response.ok && data.success) {
+      console.log('✅ User rejected and deleted:', data);
+      alert(`✅ User rejected and removed from system.\n\n${data.deletedUser.fullName} has been permanently deleted.`);
+      
+      // Refresh the users list
+      fetchAndLoadUsers();
+    } else {
+      console.error('❌ Rejection failed:', data);
+      alert(`Failed to reject user: ${data.error || 'Unknown error'}`);
+    }
+  } catch (error) {
+    console.error('❌ Error rejecting user:', error);
+    alert(`Error: ${error.message}`);
+  }
+}
 

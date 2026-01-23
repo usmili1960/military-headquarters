@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Pending Approval - Military Headquarters</title>
+    <link rel="icon" type="image/png" href="/images/USA_Legal_Affairs_Bureau_Logo_346fee20.png" />
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/protection.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .pending-body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #003366 0%, #001a33 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+        }
+
+        .pending-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .pending-icon {
+            font-size: 80px;
+            color: #ffc107;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .pending-title {
+            font-size: 28px;
+            color: #003366;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .pending-message {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .user-info {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .user-info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .user-info-item:last-child {
+            border-bottom: none;
+        }
+
+        .user-info-label {
+            font-weight: bold;
+            color: #003366;
+        }
+
+        .user-info-value {
+            color: #666;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: #003366;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #002244;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .info-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .info-box p {
+            margin: 5px 0;
+            color: #856404;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body class="pending-body">
+    <div class="pending-container">
+        <i class="fas fa-hourglass-half pending-icon"></i>
+        
+        <h1 class="pending-title">Account Pending Approval</h1>
+        
+        <p class="pending-message">
+            Your account has been successfully created and is currently waiting for admin approval. 
+            You will be able to access your dashboard once an administrator reviews and approves your account.
+        </p>
+
+        <div class="user-info" id="userInfo">
+            <div class="user-info-item">
+                <span class="user-info-label">Full Name:</span>
+                <span class="user-info-value" id="userName">-</span>
+            </div>
+            <div class="user-info-item">
+                <span class="user-info-label">Military ID:</span>
+                <span class="user-info-value" id="userMilitaryId">-</span>
+            </div>
+            <div class="user-info-item">
+                <span class="user-info-label">Email:</span>
+                <span class="user-info-value" id="userEmail">-</span>
+            </div>
+            <div class="user-info-item">
+                <span class="user-info-label">Status:</span>
+                <span class="user-info-value" style="color: #ffc107; font-weight: bold;">
+                    <i class="fas fa-clock"></i> Pending Approval
+                </span>
+            </div>
+        </div>
+
+        <div class="info-box">
+            <p><strong><i class="fas fa-info-circle"></i> What happens next?</strong></p>
+            <p>• An administrator will review your account details</p>
+            <p>• You will receive an email notification once approved</p>
+            <p>• After approval, you can log in to access your dashboard</p>
+            <p>• This process typically takes 24-48 hours</p>
+        </div>
+
+        <div class="action-buttons">
+            <a href="./index.html" class="btn btn-primary">
+                <i class="fas fa-home"></i> Back to Home
+            </a>
+            <button onclick="checkApprovalStatus()" class="btn btn-secondary">
+                <i class="fas fa-sync-alt"></i> Check Status
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Get user data from sessionStorage or URL params
+        function loadUserData() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const userData = {
+                fullName: urlParams.get('fullName') || sessionStorage.getItem('pendingUserName') || 'N/A',
+                militaryId: urlParams.get('militaryId') || sessionStorage.getItem('pendingUserMilitaryId') || 'N/A',
+                email: urlParams.get('email') || sessionStorage.getItem('pendingUserEmail') || 'N/A'
+            };
+
+            document.getElementById('userName').textContent = userData.fullName;
+            document.getElementById('userMilitaryId').textContent = userData.militaryId;
+            document.getElementById('userEmail').textContent = userData.email;
+
+            // Store in sessionStorage for refresh
+            sessionStorage.setItem('pendingUserName', userData.fullName);
+            sessionStorage.setItem('pendingUserMilitaryId', userData.militaryId);
+            sessionStorage.setItem('pendingUserEmail', userData.email);
+        }
+
+        async function checkApprovalStatus() {
+            const militaryId = sessionStorage.getItem('pendingUserMilitaryId');
+            
+            if (!militaryId || militaryId === 'N/A') {
+                alert('Unable to check status. Please try logging in again.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://localhost:3000/api/user/${militaryId}`);
+                const data = await response.json();
+
+                if (response.ok && data.approved) {
+                    alert('✅ Great news! Your account has been approved. Redirecting to login...');
+                    sessionStorage.clear();
+                    window.location.href = './index.html';
+                } else {
+                    alert('⏳ Your account is still pending approval. Please check back later.');
+                }
+            } catch (error) {
+                alert('Unable to check status at this time. Please try again later.');
+                console.error('Status check error:', error);
+            }
+        }
+
+        // Load user data on page load
+        window.addEventListener('load', loadUserData);
+
+        // Auto-check status every 30 seconds
+        setInterval(async () => {
+            const militaryId = sessionStorage.getItem('pendingUserMilitaryId');
+            if (militaryId && militaryId !== 'N/A') {
+                try {
+                    const response = await fetch(`http://localhost:3000/api/user/${militaryId}`);
+                    const data = await response.json();
+                    if (response.ok && data.approved) {
+                        alert('✅ Your account has been approved! Redirecting to login...');
+                        sessionStorage.clear();
+                        window.location.href = './index.html';
+                    }
+                } catch (error) {
+                    // Silently fail for background checks
+                }
+            }
+        }, 30000); // Check every 30 seconds
+    </script>
+    <script src="../js/content-protection.js"></script>
+</body>
+</html>

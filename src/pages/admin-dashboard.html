@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="../css/admin-dashboard.css">
     <link rel="stylesheet" href="../css/loading.css">
+    <link rel="stylesheet" href="../css/protection.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body class="admin-dashboard-body">
@@ -87,13 +88,14 @@
                             <th>Military ID</th>
                             <th>Rank</th>
                             <th>Status</th>
+                            <th>Approval Status</th>
                             <th>Account Created</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody id="usersTableBody">
                         <tr>
-                            <td colspan="7" class="table-empty-state">No users found</td>
+                            <td colspan="8" class="table-empty-state">No users found</td>
                         </tr>
                     </tbody>
                 </table>
@@ -428,6 +430,7 @@
         }
       });
     </script>
+    <script src="../js/content-protection.js"></script>
 
 </body>
 </html>

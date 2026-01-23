@@ -116,6 +116,19 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  approved: {
+    type: Boolean,
+    default: false,
+  },
+  approvedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Admin',
+    default: null,
+  },
+  approvedAt: {
+    type: Date,
+    default: null,
+  },
   verificationCode: String,
   verificationCodeExpiry: Date,
   resetPasswordToken: String,
