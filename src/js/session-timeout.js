@@ -74,7 +74,7 @@ function handleSessionTimeout() {
     document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
   });
   
-  alert('Your session has expired due to inactivity. Please login again.');
+  showNotification('Your session has expired due to inactivity. Please login again.', 'warning', 'Session Expired');
   
   // Redirect to homepage
   window.location.href = '/pages/index.html';

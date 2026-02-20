@@ -23,6 +23,11 @@ body {
     background-color: var(--light-bg);
 }
 
+/* Utility Classes */
+.hidden-display {
+    display: none !important;
+}
+
 /* Header Styles */
 .header, .user-header, .admin-header {
     display: flex;
@@ -45,7 +50,7 @@ body {
     align-items: center;
 }
 
-.bureau-logo, .army-logo {
+.bureau-logo, .army-logo, .marine-corps-logo {
     width: 80px;
     height: 80px;
     border-radius: 50%;
@@ -136,6 +141,83 @@ body {
 
 .lang-option:last-child {
     border-radius: 0 0 8px 8px;
+}
+
+/* User Menu Styles */
+.user-menu {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.user-menu-btn {
+    background-color: transparent;
+    border: none;
+    color: var(--white);
+    font-size: 28px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.user-menu-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.user-menu-btn:active {
+    transform: scale(0.95);
+}
+
+.user-menu-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background-color: var(--white);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    min-width: 200px;
+    z-index: 1000;
+    margin-top: 8px;
+}
+
+.menu-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 12px 20px;
+    background: none;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    color: var(--dark-text);
+}
+
+.menu-option:hover {
+    background-color: var(--light-bg);
+    padding-left: 24px;
+}
+
+.menu-option:first-child {
+    border-radius: 8px 8px 0 0;
+}
+
+.menu-option:last-child {
+    border-radius: 0 0 8px 8px;
+}
+
+.menu-option i {
+    font-size: 16px;
+    color: var(--primary-color);
 }
 
 /* Login Button */
@@ -651,7 +733,7 @@ body {
         font-size: 13px;
     }
 
-    .bureau-logo, .army-logo {
+    .bureau-logo, .army-logo, .marine-corps-logo {
         width: 50px;
         height: 50px;
     }
@@ -760,7 +842,7 @@ body {
         font-size: 11px;
     }
 
-    .bureau-logo, .army-logo {
+    .bureau-logo, .army-logo, .marine-corps-logo {
         width: 45px;
         height: 45px;
     }

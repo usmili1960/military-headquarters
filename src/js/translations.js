@@ -52,6 +52,7 @@ const translations = {
     'no-procedure-yet': 'No Procedure yet',
     'spouse-dependents-information': 'Spouse & Dependents Information',
     'view-edit-spd': 'View / Edit SPD Information',
+    'upload-driver-license': "Upload Driver's License",
     'spouse-information': 'Spouse Information',
     'spouse-details-admin': 'Spouse Details (Admin Only - Read Only)',
     'driver-license': "Driver's License (User Upload)",
@@ -65,6 +66,12 @@ const translations = {
     no: 'NO',
     occupation: 'Occupation',
     'full-address': 'Full Address',
+
+    // Notifications
+    'notifications': 'Notifications',
+    'mark-all-read': 'Mark All Read',
+    'no-notifications': 'No new notifications',
+    'edit-profile': 'Edit Profile',
 
     // Admin Dashboard
     'admin-control-panel': 'Admin Control Panel',

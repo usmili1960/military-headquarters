@@ -117,22 +117,7 @@
         }
     }, false);
 
-    // Disable developer tools detection
-    let devtools = { open: false, orientation: null };
-    const threshold = 160;
-    
-    const detectDevTools = () => {
-        if (window.outerWidth - window.innerWidth > threshold || 
-            window.outerHeight - window.innerHeight > threshold) {
-            if (!devtools.open) {
-                devtools.open = true;
-                // Redirect or show warning
-                document.body.innerHTML = '<div style="display:flex;justify-content:center;align-items:center;height:100vh;font-size:24px;color:red;">⚠️ Developer Tools Detected - Access Denied</div>';
-            }
-        }
-    };
-
-    setInterval(detectDevTools, 1000);
+    // DevTools detection disabled - allows developers to debug the application
 
     // Prevent image dragging
     document.addEventListener('DOMContentLoaded', function() {
@@ -172,17 +157,15 @@
     });
 
     // Disable screenshot via Page Visibility API
+    // console.clear() disabled to allow console error logging
     document.addEventListener('visibilitychange', function() {
         if (document.hidden) {
             // User might be taking screenshot
-            console.clear();
+            // Removed console.clear() to allow debugging
         }
     });
 
-    // Clear console periodically
-    setInterval(function() {
-        console.clear();
-    }, 1000);
+    // Console clearing disabled to allow error logging and debugging
 
     // Watermark overlay (optional but recommended)
     window.addEventListener('load', function() {
@@ -243,7 +226,7 @@
     window.addEventListener('blur', function() {
         blurTimeout = setTimeout(function() {
             // User might be taking screenshot
-            console.clear();
+            // Removed console.clear() to allow debugging
         }, 100);
     });
 

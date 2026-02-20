@@ -258,6 +258,147 @@
                 font-size: 30px;
             }
         }
+
+        /* Notification Popup Styles */
+        .notification-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .notification-overlay.show {
+            display: flex;
+        }
+
+        .notification-popup {
+            background-color: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 450px;
+            width: 90%;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.3s ease;
+            position: relative;
+        }
+
+        .notification-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .notification-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .notification-icon.success {
+            background-color: #d4edda;
+            color: #28a745;
+        }
+
+        .notification-icon.error {
+            background-color: #f8d7da;
+            color: #dc3545;
+        }
+
+        .notification-icon.info {
+            background-color: #d1ecf1;
+            color: #17a2b8;
+        }
+
+        .notification-icon.warning {
+            background-color: #fff3cd;
+            color: #ffc107;
+        }
+
+        .notification-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #003366;
+            margin: 0;
+        }
+
+        .notification-message {
+            color: #333;
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            white-space: pre-line;
+        }
+
+        .notification-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .notification-btn {
+            padding: 10px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .notification-btn.primary {
+            background-color: #003366;
+            color: white;
+        }
+
+        .notification-btn.primary:hover {
+            background-color: #002244;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 51, 102, 0.3);
+        }
+
+        .notification-btn.secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .notification-btn.secondary:hover {
+            background-color: #5a6268;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
     </style>
 </head>
 <body class="admin-login-body">
@@ -322,7 +463,71 @@
         </div>
     </div>
 
+    <!-- Notification Popup -->
+    <div id="notificationOverlay" class="notification-overlay">
+        <div class="notification-popup">
+            <div class="notification-header">
+                <div id="notificationIcon" class="notification-icon"></div>
+                <h3 id="notificationTitle" class="notification-title"></h3>
+            </div>
+            <div id="notificationMessage" class="notification-message"></div>
+            <div class="notification-buttons">
+                <button id="notificationBtn" class="notification-btn primary">OK</button>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // Notification System
+        function showNotification(message, type = 'info', title = '') {
+            const overlay = document.getElementById('notificationOverlay');
+            const icon = document.getElementById('notificationIcon');
+            const titleEl = document.getElementById('notificationTitle');
+            const messageEl = document.getElementById('notificationMessage');
+            const btn = document.getElementById('notificationBtn');
+
+            // Set icon based on type
+            const icons = {
+                success: '<i class="fas fa-check-circle"></i>',
+                error: '<i class="fas fa-exclamation-circle"></i>',
+                info: '<i class="fas fa-info-circle"></i>',
+                warning: '<i class="fas fa-exclamation-triangle"></i>'
+            };
+
+            const titles = {
+                success: title || 'Success',
+                error: title || 'Error',
+                info: title || 'Information',
+                warning: title || 'Warning'
+            };
+
+            icon.innerHTML = icons[type] || icons.info;
+            icon.className = `notification-icon ${type}`;
+            titleEl.textContent = titles[type];
+            messageEl.textContent = message;
+
+            overlay.classList.add('show');
+
+            // Close on button click
+            btn.onclick = () => {
+                overlay.classList.remove('show');
+            };
+
+            // Close on overlay click
+            overlay.onclick = (e) => {
+                if (e.target === overlay) {
+                    overlay.classList.remove('show');
+                }
+            };
+
+            return new Promise((resolve) => {
+                btn.onclick = () => {
+                    overlay.classList.remove('show');
+                    resolve();
+                };
+            });
+        }
+
         // API Configuration
         const API_BASE = (() => {
             const hostname = window.location.hostname;
@@ -339,11 +544,8 @@
             const password = document.getElementById('adminPassword').value;
             const rememberMe = document.getElementById('rememberMe').checked;
 
-            // Show loading state
-            const submitBtn = e.target.querySelector('button[type="submit"]');
-            const originalText = submitBtn.textContent;
-            submitBtn.textContent = '🔄 Logging in...';
-            submitBtn.disabled = true;
+            // Show loader
+            showLoader('Authenticating admin...');
 
             try {
                 // Call backend API for admin login
@@ -367,27 +569,33 @@
                     document.cookie = `adminToken=${data.token}; expires=${expiryDate.toUTCString()}; path=/; SameSite=Strict`;
                     document.cookie = `adminEmail=${email}; expires=${expiryDate.toUTCString()}; path=/; SameSite=Strict`;
 
-                    alert('✅ Admin login successful! Redirecting to Admin Dashboard...');
+                    hideLoader();
+                    await showNotification('Admin login successful! Redirecting to Admin Dashboard...', 'success', 'Login Successful');
                     window.location.href = './admin-dashboard.html';
                 } else {
                     throw new Error(data.error || 'Login failed');
                 }
             } catch (error) {
                 console.error('❌ Admin login error:', error);
-                alert(`❌ Login failed: ${error.message}\n\nDefault credentials:\nEmail: admin@military.gov\nPassword: Admin@12345`);
+                hideLoader();
+                showNotification(
+                    `Login failed: ${error.message}\n\nDefault credentials:\nEmail: admin@military.gov\nPassword: Admin@12345`,
+                    'error',
+                    'Login Failed'
+                );
                 document.getElementById('adminPassword').value = '';
                 document.getElementById('adminPassword').focus();
-            } finally {
-                // Restore button state
-                submitBtn.textContent = originalText;
-                submitBtn.disabled = false;
             }
         });
 
         // Forgot Password
         function forgotPassword(e) {
             e.preventDefault();
-            alert('Password Reset\n\nDefault Admin Credentials:\n\nEmail: admin@military.gov\nPassword: Admin@12345\n\nPlease use these credentials to login.');
+            showNotification(
+                'Default Admin Credentials:\n\nEmail: admin@military.gov\nPassword: Admin@12345\n\nPlease use these credentials to login.',
+                'info',
+                'Password Reset'
+            );
         }
 
         // Check if already logged in
@@ -409,6 +617,8 @@
             }
         });
     </script>
+    <script src="../js/notification-system.js"></script>
+    <script src="../js/loading-utils.js"></script>
     <script src="../js/content-protection.js"></script>
 </body>
 </html>

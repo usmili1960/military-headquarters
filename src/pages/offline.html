@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline - Military Headquarters</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .offline-container {
+            text-align: center;
+            max-width: 500px;
+        }
+
+        .offline-icon {
+            font-size: 120px;
+            margin-bottom: 30px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.7;
+                transform: scale(1.05);
+            }
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        .offline-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: white;
+            color: #667eea;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+        }
+
+        .cached-pages {
+            margin-top: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 25px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+        }
+
+        .cached-pages h2 {
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .cached-pages ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .cached-pages li {
+            padding: 10px;
+            margin: 5px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            transition: background 0.2s ease;
+        }
+
+        .cached-pages li:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .cached-pages a {
+            color: white;
+            text-decoration: none;
+            display: block;
+        }
+
+        .status-indicator {
+            margin-top: 30px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .online {
+            background: rgba(40, 167, 69, 0.3);
+        }
+
+        .offline {
+            background: rgba(220, 53, 69, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <div class="offline-icon">📵</div>
+        <h1>You're Offline</h1>
+        <p>
+            It seems you've lost your internet connection. 
+            Don't worry, you can still access some cached pages.
+        </p>
+
+        <div class="offline-actions">
+            <button class="btn" onclick="location.reload()">
+                Try Again
+            </button>
+            <a href="/" class="btn btn-secondary">
+                Go to Homepage
+            </a>
+        </div>
+
+        <div class="cached-pages">
+            <h2>📦 Available Offline Pages</h2>
+            <ul>
+                <li><a href="/">Homepage</a></li>
+                <li><a href="/src/pages/user-dashboard.html">User Dashboard</a></li>
+                <li><a href="/src/pages/admin-dashboard.html">Admin Dashboard</a></li>
+            </ul>
+        </div>
+
+        <div class="status-indicator" id="statusIndicator">
+            <span id="statusText">Checking connection...</span>
+        </div>
+    </div>
+
+    <script>
+        // Check connection status
+        function updateStatus() {
+            const indicator = document.getElementById('statusIndicator');
+            const statusText = document.getElementById('statusText');
+            
+            if (navigator.onLine) {
+                indicator.className = 'status-indicator online';
+                statusText.textContent = '✅ Connection restored! You can reload the page.';
+                
+                // Auto-reload after 2 seconds
+                setTimeout(() => {
+                    location.reload();
+                }, 2000);
+            } else {
+                indicator.className = 'status-indicator offline';
+                statusText.textContent = '❌ Still offline. Waiting for connection...';
+            }
+        }
+
+        // Initial check
+        updateStatus();
+
+        // Listen for online/offline events
+        window.addEventListener('online', updateStatus);
+        window.addEventListener('offline', updateStatus);
+
+        // Check every 5 seconds
+        setInterval(updateStatus, 5000);
+    </script>
+</body>
+</html>

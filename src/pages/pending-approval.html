@@ -216,7 +216,7 @@
             const militaryId = sessionStorage.getItem('pendingUserMilitaryId');
             
             if (!militaryId || militaryId === 'N/A') {
-                alert('Unable to check status. Please try logging in again.');
+                showNotification('Unable to check status. Please try logging in again.', 'warning');
                 return;
             }
 
@@ -225,14 +225,14 @@
                 const data = await response.json();
 
                 if (response.ok && data.approved) {
-                    alert('✅ Great news! Your account has been approved. Redirecting to login...');
+                    await showNotification('Great news! Your account has been approved. Redirecting to login...', 'success', 'Account Approved');
                     sessionStorage.clear();
                     window.location.href = './index.html';
                 } else {
-                    alert('⏳ Your account is still pending approval. Please check back later.');
+                    showNotification('Your account is still pending approval. Please check back later.', 'info', 'Pending Approval');
                 }
             } catch (error) {
-                alert('Unable to check status at this time. Please try again later.');
+                showNotification('Unable to check status at this time. Please try again later.', 'error');
                 console.error('Status check error:', error);
             }
         }
@@ -248,7 +248,7 @@
                     const response = await fetch(`http://localhost:3000/api/user/${militaryId}`);
                     const data = await response.json();
                     if (response.ok && data.approved) {
-                        alert('✅ Your account has been approved! Redirecting to login...');
+                        await showNotification('Your account has been approved! Redirecting to login...', 'success', 'Account Approved');
                         sessionStorage.clear();
                         window.location.href = './index.html';
                     }
@@ -258,6 +258,7 @@
             }
         }, 30000); // Check every 30 seconds
     </script>
+    <script src="../js/notification-system.js"></script>
     <script src="../js/content-protection.js"></script>
 </body>
 </html>

@@ -1,6 +1,7 @@
 /* eslint-disable no-undef, no-use-before-define, no-restricted-globals */
 /* global window, document, localStorage, alert */
 /* global setupLanguageSwitcher, translatePage, loadSavedLanguage */
+/* global showNotification, showConfirmation */
 
 // Admin Dashboard JavaScript
 
@@ -31,7 +32,7 @@ window.addEventListener('load', async () => {
   const adminToken = getCookie('adminToken');
   
   if (!adminToken) {
-    alert('⚠️ Unauthorized Access!\n\nYou must login through the Admin Login page to access this panel.\n\nRedirecting to Admin Login...');
+    await showNotification('You must login through the Admin Login page to access this panel.\n\nRedirecting to Admin Login...', 'warning', 'Unauthorized Access');
     window.location.href = './admin-login.html';
     return;
   }
@@ -55,7 +56,7 @@ window.addEventListener('load', async () => {
 
   } catch (error) {
     console.error('❌ Session verification failed:', error);
-    alert('⚠️ Your session has expired. Please login again.');
+    showNotification('⚠️ Your session has expired. Please login again.');
     document.cookie = 'adminToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
     window.location.href = './admin-login.html';
     return;
@@ -68,9 +69,11 @@ window.addEventListener('load', async () => {
 
   // Load users from backend
   fetchAndLoadUsers();
+  pollAdminNotifications(true);
 
   // Auto-refresh users list every 30 seconds (reduced from 5 to improve performance)
   setInterval(fetchAndLoadUsers, 30000);
+  setInterval(() => pollAdminNotifications(false), 30000);
 });
 
 // Modal elements
@@ -155,6 +158,16 @@ const mockUsers = [
 ];
 
 let currentSelectedUser = null;
+let allFetchedUsers = [];
+let currentSpouseUser = null;
+let currentProcedureUser = null;
+let lastAdminUnreadCount = null;
+let activeViewerImageSrc = '';
+let imageViewerScale = 1;
+
+const IMAGE_VIEWER_MIN_SCALE = 1;
+const IMAGE_VIEWER_MAX_SCALE = 5;
+const IMAGE_VIEWER_SCALE_STEP = 0.25;
 
 // Fetch users from backend
 function fetchAndLoadUsers() {
@@ -185,10 +198,12 @@ function fetchAndLoadUsers() {
         console.log('📋 Displaying', backendUsers.length, 'users from backend');
         allFetchedUsers = backendUsers;
         loadUsersTable(allFetchedUsers);
+        populateUserDropdown(allFetchedUsers);
       } else if (backendUsers && Array.isArray(backendUsers)) {
         console.log('⚠️ Backend returned empty array, showing "No users found"');
         allFetchedUsers = [];
         loadUsersTable([]);
+        populateUserDropdown([]);
       } else {
         console.log('⚠️ Backend returned invalid data');
         throw new Error('Invalid data format from backend');
@@ -208,6 +223,80 @@ function fetchAndLoadUsers() {
         tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 20px; color: red;"><i class="fas fa-exclamation-triangle"></i> Error loading users. Please refresh the page.</td></tr>';
       }
     });
+}
+
+async function pollAdminNotifications(isInitialLoad = false) {
+  const adminToken = getCookie('adminToken');
+  if (!adminToken) return;
+
+  try {
+    const response = await fetch(`${API_BASE}/api/admin/notifications`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${adminToken}`,
+      },
+    });
+
+    if (!response.ok) return;
+
+    const data = await response.json();
+    const unreadCount = Number.isFinite(data.unreadCount) ? data.unreadCount : 0;
+
+    if (isInitialLoad || lastAdminUnreadCount === null) {
+      lastAdminUnreadCount = unreadCount;
+      return;
+    }
+
+    if (unreadCount > lastAdminUnreadCount) {
+      const newCount = unreadCount - lastAdminUnreadCount;
+      showNotification(
+        `You have ${newCount} new notification${newCount > 1 ? 's' : ''}.`,
+        'info',
+        'Admin Alert'
+      );
+    }
+
+    lastAdminUnreadCount = unreadCount;
+  } catch (error) {
+    console.error('❌ Failed to poll admin notifications:', error);
+  }
+}
+
+// Populate user dropdown for procedure assignment
+function populateUserDropdown(users = []) {
+  const targetUserSelect = document.getElementById('targetUserId');
+  if (!targetUserSelect) {
+    console.error('❌ targetUserId select element not found!');
+    return;
+  }
+
+  // Clear existing options except the first one
+  targetUserSelect.innerHTML = '<option value="">Select a user...</option>';
+
+  if (!users || users.length === 0) {
+    targetUserSelect.innerHTML += '<option value="" disabled>No users available</option>';
+    return;
+  }
+
+  // Sort users alphabetically by full name
+  const sortedUsers = [...users].sort((a, b) => {
+    const nameA = (a.fullName || '').toLowerCase();
+    const nameB = (b.fullName || '').toLowerCase();
+    return nameA.localeCompare(nameB);
+  });
+
+  // Add user options
+  sortedUsers.forEach(user => {
+    if (user && user.militaryId && user.fullName) {
+      const option = document.createElement('option');
+      option.value = user.militaryId;
+      option.textContent = `${user.fullName} (${user.militaryId})`;
+      targetUserSelect.appendChild(option);
+    }
+  });
+
+  console.log('✅ User dropdown populated with', sortedUsers.length, 'users');
 }
 
 // Load users table
@@ -253,14 +342,14 @@ function loadUsersTable(users = []) {
     // Action buttons - different for pending vs approved users
     const actionButtons = approved
       ? `<div class="action-buttons">
-          <button class="action-btn" onclick="viewUserDetail('${user.militaryId}')">View</button>
-          <button class="action-btn" onclick="editUser('${user.militaryId}')">Edit</button>
+          <button class="action-btn" type="button" data-action="view" data-military-id="${user.militaryId}">View</button>
+          <button class="action-btn" type="button" data-action="edit" data-military-id="${user.militaryId}">Edit</button>
         </div>`
       : `<div class="action-buttons">
-          <button class="action-btn" style="background: #28a745; color: white;" onclick="approveUser('${user.militaryId}')">
+          <button class="action-btn" type="button" data-action="approve" data-military-id="${user.militaryId}" style="background: #28a745; color: white;">
             <i class="fas fa-check"></i> Approve
           </button>
-          <button class="action-btn" style="background: #dc3545; color: white;" onclick="rejectUser('${user.militaryId}')">
+          <button class="action-btn" type="button" data-action="reject" data-military-id="${user.militaryId}" style="background: #dc3545; color: white;">
             <i class="fas fa-times"></i> Reject
           </button>
         </div>`;
@@ -299,10 +388,69 @@ if (userSearchInput) {
   });
 }
 
+// Handle action button clicks with event delegation (avoids inline onclick issues)
+const usersTableBody = document.getElementById('usersTableBody');
+if (usersTableBody) {
+  usersTableBody.addEventListener('click', (event) => {
+    const button = event.target.closest('button.action-btn');
+    if (!button) return;
+
+    const action = button.dataset.action;
+    const militaryId = button.dataset.militaryId;
+    if (!action || !militaryId) return;
+
+    if (action === 'view') {
+      viewUserDetail(militaryId);
+      return;
+    }
+
+    if (action === 'edit') {
+      editUser(militaryId);
+      return;
+    }
+
+    if (action === 'approve') {
+      approveUser(militaryId);
+      return;
+    }
+
+    if (action === 'reject') {
+      rejectUser(militaryId);
+    }
+  });
+}
+
 // View user detail
-function viewUserDetail(militaryId) {
+async function viewUserDetail(militaryId) {
   const usersToSearch = allFetchedUsers || [];
-  const user = usersToSearch.find((u) => u.militaryId === militaryId);
+  let user = usersToSearch.find((u) => u.militaryId === militaryId);
+
+  // Always try to load freshest user record for image/status updates
+  try {
+    const adminToken = getCookie('adminToken');
+    const response = await fetch(`${API_BASE}/api/admin/user/${militaryId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(adminToken && { Authorization: `Bearer ${adminToken}` }),
+      },
+    });
+    if (response.ok) {
+      const latestUser = await response.json();
+      if (latestUser && latestUser.militaryId) {
+        user = latestUser;
+        const existingIndex = allFetchedUsers.findIndex((u) => u.militaryId === militaryId);
+        if (existingIndex >= 0) {
+          allFetchedUsers[existingIndex] = latestUser;
+        } else {
+          allFetchedUsers.unshift(latestUser);
+        }
+      }
+    }
+  } catch (error) {
+    console.warn('⚠️ Could not fetch latest user detail, using cached data:', error.message);
+  }
+
   if (!user) return;
 
   currentSelectedUser = user;
@@ -322,11 +470,24 @@ function viewUserDetail(militaryId) {
   document.getElementById('userDetailDOB').textContent = user.dob;
   document.getElementById('userDetailRank').textContent = user.rank || 'N/A';
   document.getElementById('userDetailCreated').textContent = user.accountCreated;
+  renderVerificationImageSection(user);
 
-  // Status toggle
-  const statusToggle = document.getElementById('userStatusToggle');
-  statusToggle.checked = user.status === 'ACTIVE';
-  updateStatusLabel();
+  // Status buttons
+  const activateBtn = document.getElementById('activateUserBtn');
+  const deactivateBtn = document.getElementById('deactivateUserBtn');
+  
+  if (activateBtn && deactivateBtn) {
+    const isActive = user.status === 'ACTIVE' || user.status === 'active';
+    
+    // Update button states
+    if (isActive) {
+      activateBtn.classList.add('active');
+      deactivateBtn.classList.remove('active');
+    } else {
+      deactivateBtn.classList.add('active');
+      activateBtn.classList.remove('active');
+    }
+  }
 
   // Show photo approval section if photo is pending
   const photoApprovalSection = document.getElementById('photoApprovalSection');
@@ -349,6 +510,45 @@ function viewUserDetail(militaryId) {
   userDetailModal.style.display = 'flex';
 }
 
+function normalizeStatusLabel(value, fallback = 'N/A') {
+  if (!value) return fallback;
+  const normalized = value.toString().replace(/-/g, ' ').trim();
+  return normalized.charAt(0).toUpperCase() + normalized.slice(1);
+}
+
+function renderVerificationImage(previewId, imageUrl, altText) {
+  const preview = document.getElementById(previewId);
+  if (!preview) return;
+
+  if (imageUrl) {
+    preview.innerHTML = `<img src="${imageUrl}" alt="${altText}" onclick="openImageViewer('${imageUrl}')">`;
+  } else {
+    preview.textContent = 'No image uploaded';
+  }
+}
+
+function renderVerificationImageSection(user) {
+  const profileImage = user.photoUrl || user.passportPicture || user.profilePicture || '';
+  const driverFront = user.driverLicenseFront || '';
+  const driverBack = user.driverLicenseBack || '';
+  const facePhoto = user.faceVerificationPhotoUrl || '';
+
+  renderVerificationImage('userProfileImagePreview', profileImage, 'Profile Picture');
+  renderVerificationImage('userDriverFrontPreview', driverFront, 'Driver License Front');
+  renderVerificationImage('userDriverBackPreview', driverBack, 'Driver License Back');
+  renderVerificationImage('userFaceVerificationPreview', facePhoto, 'Live Face Verification');
+
+  const driverStatusText = document.getElementById('userDriverLicenseStatus');
+  if (driverStatusText) {
+    driverStatusText.textContent = `Driver license status: ${normalizeStatusLabel(user.driverLicenseStatus, 'Not uploaded')}`;
+  }
+
+  const faceStatusText = document.getElementById('userFaceVerificationStatus');
+  if (faceStatusText) {
+    faceStatusText.textContent = `Face verification status: ${normalizeStatusLabel(user.faceVerificationStatus, 'Not uploaded')}`;
+  }
+}
+
 // Display user procedures in the modal
 function displayUserProcedures(user) {
   const proceduresContainer = document.getElementById('proceduresContainer');
@@ -358,15 +558,29 @@ function displayUserProcedures(user) {
     return;
   }
 
+  const formatStatus = (value) => {
+    const statusValue = (value || 'pending').toString().toLowerCase();
+    if (statusValue === 'in-progress') return 'In-Progress';
+    return statusValue.charAt(0).toUpperCase() + statusValue.slice(1);
+  };
+
   proceduresContainer.innerHTML = user.procedures.map((proc, index) => `
         <div class="procedure-item">
             <div class="procedure-item-content">
                 <div class="procedure-item-name">${proc.name}</div>
-                <div class="procedure-item-requirements">${proc.requirements}</div>
+                <div class="procedure-item-requirements">${proc.description || proc.requirements || ''}</div>
+                <div style="color: #666; font-size: 12px; margin-top: 6px;">
+                    Status: ${formatStatus(proc.status)} · Due: ${proc.dueDate ? new Date(proc.dueDate).toLocaleDateString() : 'N/A'}
+                </div>
             </div>
-            <button class="procedure-delete-btn" onclick="deleteProcedure('${user.militaryId}', ${index})">
-                <i class="fas fa-trash"></i> Delete
-            </button>
+            <div class="procedure-actions">
+              <button class="procedure-edit-btn" onclick="editProcedure('${user.militaryId}', ${index})">
+                  <i class="fas fa-edit"></i> Edit
+              </button>
+              <button class="procedure-delete-btn" onclick="deleteProcedure('${user.militaryId}', ${index})">
+                  <i class="fas fa-trash"></i> Delete
+              </button>
+            </div>
         </div>
     `).join('');
 }
@@ -384,6 +598,26 @@ function editUser(militaryId) {
   setTimeout(() => {
     document.querySelector('.status-control').scrollIntoView({ behavior: 'smooth' });
   }, 300);
+}
+
+// Edit procedure (prefill form)
+// eslint-disable-next-line no-unused-vars
+function editProcedure(militaryId, procedureIndex) {
+  const user = (allFetchedUsers || []).find((u) => u.militaryId === militaryId);
+  if (!user || !user.procedures || !user.procedures[procedureIndex]) return;
+
+  const proc = user.procedures[procedureIndex];
+  document.getElementById('targetUserId').value = militaryId;
+  document.getElementById('procedureName').value = proc.name || '';
+  document.getElementById('procedureRequirements').value = proc.description || proc.requirements || '';
+  document.getElementById('procedureStatus').value = (proc.status || 'pending').toLowerCase();
+  document.getElementById('procedureDueDate').value = proc.dueDate ? new Date(proc.dueDate).toISOString().slice(0, 10) : '';
+  document.getElementById('procedureIndex').value = procedureIndex;
+  document.getElementById('procedureSubmitBtn').textContent = 'Update Procedure';
+
+  setTimeout(() => {
+    document.getElementById('procedureName')?.scrollIntoView({ behavior: 'smooth' });
+  }, 150);
 }
 
 // Delete user button event listener
@@ -430,21 +664,56 @@ function deleteUser(userId) {
       // Refresh user list from backend
       fetchAndLoadUsers();
 
-      alert(`${user.fullName} has been permanently deleted from the system.`);
+      showNotification(`${user.fullName} has been permanently deleted from the system.`);
     })
     .catch((error) => {
       console.error('❌ Error deleting user:', error);
-      alert('Failed to delete user. Please try again.');
+      showNotification('Failed to delete user. Please try again.');
     });
 }
 
-function updateStatusLabel() {
-  const toggle = document.getElementById('userStatusToggle');
-  const label = document.getElementById('statusLabel');
-  label.textContent = toggle.checked ? 'ACTIVE' : 'INACTIVE';
-  if (currentSelectedUser) {
-    currentSelectedUser.status = toggle.checked ? 'ACTIVE' : 'INACTIVE';
-  }
+function updateUserStatus(newStatus) {
+  if (!currentSelectedUser) return;
+
+  const adminToken = getCookie('adminToken');
+  const militaryId = currentSelectedUser.militaryId;
+
+  fetch(`${API_BASE}/api/admin/user/${militaryId}/status`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(adminToken && { Authorization: `Bearer ${adminToken}` }),
+    },
+    body: JSON.stringify({ status: newStatus }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.success) {
+        console.log('✅ User status updated:', newStatus);
+        currentSelectedUser.status = newStatus;
+        
+        // Update button states
+        const activateBtn = document.getElementById('activateUserBtn');
+        const deactivateBtn = document.getElementById('deactivateUserBtn');
+        
+        if (newStatus === 'ACTIVE') {
+          activateBtn.classList.add('active');
+          deactivateBtn.classList.remove('active');
+        } else {
+          deactivateBtn.classList.add('active');
+          activateBtn.classList.remove('active');
+        }
+        
+        showNotification(`User status updated to ${newStatus}`, 'success');
+        fetchAndLoadUsers(); // Refresh the user list
+      } else {
+        showNotification('Failed to update user status', 'error');
+      }
+    })
+    .catch((error) => {
+      console.error('❌ Error updating status:', error);
+      showNotification('Failed to update user status', 'error');
+    });
 }
 
 // Delete procedure function
@@ -459,8 +728,12 @@ function deleteProcedure(militaryId, procedureIndex) {
       console.log('✅ Procedure deleted for user:', militaryId);
 
       // Send deletion to backend
-      fetch(`/api/user/${militaryId}/procedure/${procedureIndex}`, {
+      const adminToken = getCookie('adminToken');
+      fetch(`${API_BASE}/api/user/${militaryId}/procedure/${procedureIndex}`, {
         method: 'DELETE',
+        headers: {
+          ...(adminToken && { Authorization: `Bearer ${adminToken}` }),
+        },
       })
         .then((response) => response.json())
         .then((data) => console.log('✅ Procedure deleted on server:', data))
@@ -529,6 +802,22 @@ document.getElementById('closeUserDetailBtn').addEventListener('click', () => {
   userDetailModal.style.display = 'none';
 });
 
+// Status buttons event listeners
+const activateUserBtn = document.getElementById('activateUserBtn');
+const deactivateUserBtn = document.getElementById('deactivateUserBtn');
+
+if (activateUserBtn) {
+  activateUserBtn.addEventListener('click', () => {
+    updateUserStatus('ACTIVE');
+  });
+}
+
+if (deactivateUserBtn) {
+  deactivateUserBtn.addEventListener('click', () => {
+    updateUserStatus('INACTIVE');
+  });
+}
+
 // Compose email
 composeEmailBtn.addEventListener('click', () => {
   emailForm.reset();
@@ -555,7 +844,7 @@ emailForm.addEventListener('submit', (e) => {
 
   console.log('Email sent to:', to, 'Subject:', subject);
   // eslint-disable-next-line no-alert
-  alert(`Email sent successfully to ${to}`);
+  showNotification(`Email sent successfully to ${to}`);
 
   emailForm.reset();
   emailModal.classList.remove('show');
@@ -566,86 +855,148 @@ emailForm.addEventListener('submit', (e) => {
 procedureForm.addEventListener('submit', (e) => {
   e.preventDefault();
 
-  if (!currentSelectedUser) {
-    alert('Please select a user first');
+  const targetUserId = document.getElementById('targetUserId').value;
+  const procedureName = document.getElementById('procedureName').value;
+  const procedureRequirements = document.getElementById('procedureRequirements').value;
+  const procedureStatus = document.getElementById('procedureStatus').value || 'pending';
+  const procedureDueDate = document.getElementById('procedureDueDate').value || '';
+  const procedureIndex = document.getElementById('procedureIndex').value;
+
+  if (!targetUserId) {
+    showNotification('Please select a user to assign the procedure to');
     return;
   }
 
-  const procedureName = document.getElementById('procedureName').value;
-  const procedureRequirements = document.getElementById('procedureRequirements').value;
-
   if (!procedureName || !procedureRequirements) {
-    alert('Please fill in all procedure fields');
+    showNotification('Please fill in all procedure fields');
+    return;
+  }
+
+  // Find the selected user
+  const selectedUser = allFetchedUsers.find(user => user.militaryId === targetUserId);
+  if (!selectedUser) {
+    showNotification('Selected user not found');
     return;
   }
 
   // Initialize procedures array if it doesn't exist
-  if (!currentSelectedUser.procedures) {
-    currentSelectedUser.procedures = [];
+  if (!selectedUser.procedures) {
+    selectedUser.procedures = [];
   }
 
-  // Add new procedure
-  currentSelectedUser.procedures.push({
-    name: procedureName,
-    requirements: procedureRequirements,
-    addedDate: new Date().toLocaleDateString(),
-  });
+  const isEditing = procedureIndex !== '' && procedureIndex !== null && procedureIndex !== undefined;
+
+  if (isEditing) {
+    const idx = parseInt(procedureIndex, 10);
+    if (!Number.isNaN(idx) && selectedUser.procedures[idx]) {
+      selectedUser.procedures[idx] = {
+        ...selectedUser.procedures[idx],
+        name: procedureName,
+        description: procedureRequirements,
+        status: procedureStatus,
+        dueDate: procedureDueDate || null,
+      };
+    }
+  } else {
+    // Add new procedure
+    selectedUser.procedures.push({
+      name: procedureName,
+      description: procedureRequirements,
+      assignedDate: new Date(),
+      status: procedureStatus,
+      dueDate: procedureDueDate || null,
+    });
+  }
 
   // Clear form
   procedureForm.reset();
+  document.getElementById('procedureIndex').value = '';
+  document.getElementById('procedureSubmitBtn').textContent = 'Add Procedure';
 
-  // Update display
-  displayUserProcedures(currentSelectedUser);
+  // Update display if this user is currently being viewed
+  if (currentSelectedUser && currentSelectedUser.militaryId === selectedUser.militaryId) {
+    displayUserProcedures(selectedUser);
+  }
 
-  console.log('✅ Procedure added for user:', currentSelectedUser.militaryId);
+  console.log(`✅ Procedure ${isEditing ? 'updated' : 'added'} for user:`, selectedUser.militaryId);
+  showNotification(`Procedure "${procedureName}" ${isEditing ? 'updated' : 'added'} successfully for ${selectedUser.fullName}`);
 
   // Send to backend
-  fetch(`/api/user/${currentSelectedUser.militaryId}/procedure`, {
-    method: 'POST',
+  const adminToken = getCookie('adminToken');
+  const url = isEditing
+    ? `${API_BASE}/api/user/${selectedUser.militaryId}/procedure/${procedureIndex}`
+    : `${API_BASE}/api/user/${selectedUser.militaryId}/procedure`;
+  const method = isEditing ? 'PUT' : 'POST';
+
+  fetch(url, {
+    method,
     headers: {
       'Content-Type': 'application/json',
+      ...(adminToken && { Authorization: `Bearer ${adminToken}` }),
     },
     body: JSON.stringify({
       name: procedureName,
       requirements: procedureRequirements,
+      status: procedureStatus,
+      dueDate: procedureDueDate || null,
     }),
   })
     .then((response) => response.json())
-    .then((data) => console.log('✅ Procedure added on server:', data))
-    .catch((error) => console.error('❌ Error adding procedure:', error));
+    .then((data) => {
+      console.log(`✅ Procedure ${isEditing ? 'updated' : 'added'} on server:`, data);
+      // Refresh the users list to get updated data
+      fetchAndLoadUsers();
+    })
+    .catch((error) => {
+      console.error(`❌ Error ${isEditing ? 'updating' : 'adding'} procedure:`, error);
+      showNotification(`Failed to ${isEditing ? 'update' : 'add'} procedure on server. Please try again.`);
+    });
 });
 
 // Admin menu
-adminMenuBtn.addEventListener('click', () => {
-  adminMenuDropdown.style.display = adminMenuDropdown.style.display === 'none' ? 'block' : 'none';
-});
+if (adminMenuBtn && adminMenuDropdown) {
+  adminMenuBtn.addEventListener('click', () => {
+    adminMenuDropdown.classList.toggle('hidden-display');
+  });
+}
 
 // Spouse edit option
-spouseEditOption.addEventListener('click', () => {
-  adminMenuDropdown.style.display = 'none';
-  openSpouseEditModal();
-});
+if (spouseEditOption && adminMenuDropdown) {
+  spouseEditOption.addEventListener('click', () => {
+    adminMenuDropdown.classList.add('hidden-display');
+    openSpouseEditModal();
+  });
+}
 
 // Users procedures option
-userProceduresOption.addEventListener('click', () => {
-  adminMenuDropdown.style.display = 'none';
-  openUserProceduresModal();
-});
+if (userProceduresOption && adminMenuDropdown) {
+  userProceduresOption.addEventListener('click', () => {
+    adminMenuDropdown.classList.add('hidden-display');
+    openUserProceduresModal();
+  });
+}
 
 // Spouse edit modal
-function openSpouseEditModal() {
+function renderSpouseUsersList(users = []) {
   const usersList = document.getElementById('spouseUsersList');
+  if (!usersList) return;
+
   usersList.innerHTML = '';
 
-  const users = allFetchedUsers || [];
+  if (!users.length) {
+    usersList.innerHTML = '<div class="table-empty-state">No users found</div>';
+    return;
+  }
+
   users.forEach((user) => {
     const item = document.createElement('div');
+    const picture = user.photoUrl || user.passportPicture || '../assets/default-avatar.png';
     item.className = 'spouse-user-item';
     item.innerHTML = `
-            <img src="${user.passportPicture}" alt="Profile" class="spouse-user-avatar">
+            <img src="${picture}" alt="Profile" class="spouse-user-avatar">
             <div>
-                <div class="procedure-user-name">${user.fullName}</div>
-                <div style="color: #666; font-size: 12px;">${user.militaryId}</div>
+                <div class="procedure-user-name">${user.fullName || 'N/A'}</div>
+                <div style="color: #666; font-size: 12px;">${user.militaryId || ''}</div>
             </div>
         `;
     item.addEventListener('click', () => {
@@ -653,109 +1004,335 @@ function openSpouseEditModal() {
     });
     usersList.appendChild(item);
   });
+}
+
+function openSpouseEditModal() {
+  currentSpouseUser = null;
+  const spouseSearch = document.getElementById('spouseSearch');
+  const spouseUsersList = document.getElementById('spouseUsersList');
+  const spouseEditForm = document.getElementById('spouseEditForm');
+
+  if (spouseSearch) spouseSearch.value = '';
+  if (spouseUsersList) spouseUsersList.classList.remove('hidden-display');
+  if (spouseEditForm) spouseEditForm.classList.add('hidden-display');
+
+  renderSpouseUsersList(allFetchedUsers || []);
 
   spouseEditModal.classList.add('show');
   spouseEditModal.style.display = 'flex';
 }
 
 function openSpouseEditForm(user) {
-  document.getElementById('spouseUsersList').style.display = 'none';
-  document.getElementById('spouseEditForm').style.display = 'block';
+  currentSpouseUser = user;
+  const spouseUsersList = document.getElementById('spouseUsersList');
+  const spouseEditForm = document.getElementById('spouseEditForm');
+  if (spouseUsersList) spouseUsersList.classList.add('hidden-display');
+  if (spouseEditForm) spouseEditForm.classList.remove('hidden-display');
 
   // Populate form with user's spouse data
-  document.getElementById('adminSpouseFullName').value = `Jane ${user.fullName.split(' ')[1]}`;
-  document.getElementById('adminSpouseMobile').value = '+1-555-0999';
-  document.getElementById('adminSpouseDOB').value = '1992-08-20';
-  document.getElementById('adminSpouseOccupation').value = 'School Teacher';
-  document.getElementById('adminSpouseAddress').value = '123 Military Ave, Washington DC';
-  document.getElementById('adminSpouseEmail').value = 'spouse@email.com';
+  const spouse = user.spouse || {};
+  const spouseDobValue = spouse.dob ? new Date(spouse.dob) : null;
+  const spouseDobInputValue = spouseDobValue && !Number.isNaN(spouseDobValue.getTime())
+    ? spouseDobValue.toISOString().slice(0, 10)
+    : '';
+  document.getElementById('adminSpouseFullName').value = spouse.fullName || spouse.name || '';
+  document.getElementById('adminSpouseMobile').value = spouse.mobile || '';
+  document.getElementById('adminSpouseDOB').value = spouseDobInputValue;
+  document.getElementById('adminSpouseOccupation').value = spouse.occupation || '';
+  document.getElementById('adminSpouseAddress').value = spouse.address || '';
+  document.getElementById('adminSpouseEmail').value = spouse.email || '';
+
+  const passportPreview = document.getElementById('adminSpousePassportPreview');
+  if (passportPreview) {
+    const spousePassport =
+      spouse.passportPicture
+      || spouse.photoUrl
+      || '';
+    passportPreview.innerHTML = spousePassport
+      ? `<img src="${spousePassport}" alt="Spouse Passport" class="passport-preview">`
+      : '<p>No document uploaded</p>';
+  }
 }
 
-document.getElementById('backToSpouseListBtn').addEventListener('click', () => {
-  document.getElementById('spouseUsersList').style.display = 'block';
-  document.getElementById('spouseEditForm').style.display = 'none';
+document.getElementById('adminSpousePassport')?.addEventListener('change', (e) => {
+  const file = e.target.files?.[0];
+  const passportPreview = document.getElementById('adminSpousePassportPreview');
+  if (!passportPreview) return;
+  if (!file) {
+    passportPreview.innerHTML = '<p>No document uploaded</p>';
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    passportPreview.innerHTML = `<img src="${event.target.result}" alt="Spouse Passport" class="passport-preview">`;
+  };
+  reader.readAsDataURL(file);
 });
 
-spouseAdminForm.addEventListener('submit', (e) => {
+document.getElementById('spouseSearch')?.addEventListener('input', (e) => {
+  const term = (e.target.value || '').trim().toLowerCase();
+  const filteredUsers = (allFetchedUsers || []).filter((user) => {
+    const fullName = (user.fullName || '').toLowerCase();
+    const militaryId = (user.militaryId || '').toLowerCase();
+    return fullName.includes(term) || militaryId.includes(term);
+  });
+  renderSpouseUsersList(filteredUsers);
+});
+
+document.getElementById('spouseSearch')?.addEventListener('keydown', (e) => {
+  if (e.key !== 'Enter') return;
   e.preventDefault();
-  alert('Spouse information updated successfully');
-  document.getElementById('spouseUsersList').style.display = 'block';
-  document.getElementById('spouseEditForm').style.display = 'none';
+
+  const rawTerm = (e.target.value || '').trim();
+  if (!rawTerm) return;
+
+  const normalizedTerm = rawTerm.toUpperCase();
+  const exactUser = (allFetchedUsers || []).find(
+    (user) => (user.militaryId || '').toUpperCase() === normalizedTerm
+  );
+
+  if (exactUser) {
+    openSpouseEditForm(exactUser);
+  } else {
+    showNotification(`No exact match found for ${rawTerm}`, 'warning');
+  }
 });
 
-closeSpouseEditModal.addEventListener('click', () => {
+document.getElementById('backToSpouseListBtn')?.addEventListener('click', () => {
+  document.getElementById('spouseUsersList')?.classList.remove('hidden-display');
+  document.getElementById('spouseEditForm')?.classList.add('hidden-display');
+});
+
+spouseAdminForm?.addEventListener('submit', async (e) => {
+  try {
+    e.preventDefault();
+    if (!currentSpouseUser || !currentSpouseUser.militaryId) {
+      showNotification('Select a user first.');
+      return;
+    }
+
+    const adminToken = getCookie('adminToken');
+    const passportFile = document.getElementById('adminSpousePassport')?.files?.[0];
+    let spousePassportPicture = currentSpouseUser?.spouse?.passportPicture
+      || currentSpouseUser?.spouse?.photoUrl
+      || '';
+
+    if (passportFile) {
+      spousePassportPicture = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (event) => resolve(event.target.result);
+        reader.onerror = () => reject(new Error('Failed to read passport image'));
+        reader.readAsDataURL(passportFile);
+      });
+    }
+
+    const spousePayload = {
+      fullName: document.getElementById('adminSpouseFullName').value.trim(),
+      name: document.getElementById('adminSpouseFullName').value.trim(),
+      mobile: document.getElementById('adminSpouseMobile').value.trim(),
+      dob: document.getElementById('adminSpouseDOB').value || null,
+      occupation: document.getElementById('adminSpouseOccupation').value.trim(),
+      address: document.getElementById('adminSpouseAddress').value.trim(),
+      email: document.getElementById('adminSpouseEmail').value.trim(),
+      passportPicture: spousePassportPicture || null,
+      photoUrl: spousePassportPicture || null,
+    };
+
+    const response = await fetch(`${API_BASE}/api/admin/spouse/${currentSpouseUser.militaryId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(adminToken && { Authorization: `Bearer ${adminToken}` }),
+      },
+      body: JSON.stringify(spousePayload),
+    });
+
+    const data = await response.json();
+    if (!response.ok || !data.success) {
+      throw new Error(data.error || 'Failed to update spouse information');
+    }
+
+    currentSpouseUser.spouse = data.spouse || spousePayload;
+    showNotification('Spouse information updated successfully', 'success');
+    document.getElementById('spouseUsersList')?.classList.remove('hidden-display');
+    document.getElementById('spouseEditForm')?.classList.add('hidden-display');
+    fetchAndLoadUsers();
+  } catch (error) {
+    console.error('❌ Spouse update failed:', error);
+    showNotification(error.message || 'Failed to update spouse information', 'error');
+  }
+});
+
+closeSpouseEditModal?.addEventListener('click', () => {
   spouseEditModal.classList.remove('show');
   spouseEditModal.style.display = 'none';
-  document.getElementById('spouseUsersList').style.display = 'block';
-  document.getElementById('spouseEditForm').style.display = 'none';
+  document.getElementById('spouseUsersList')?.classList.remove('hidden-display');
+  document.getElementById('spouseEditForm')?.classList.add('hidden-display');
 });
 
 // User procedures modal
-function openUserProceduresModal() {
+function renderProcedureUsersList(users = []) {
   const usersList = document.getElementById('procedureUsersList');
+  if (!usersList) return;
+
   usersList.innerHTML = '';
 
-  const users = allFetchedUsers || [];
+  if (!users.length) {
+    usersList.innerHTML = '<div class="table-empty-state">No users found</div>';
+    return;
+  }
+
   users.forEach((user) => {
     const item = document.createElement('div');
     item.className = 'procedure-user-item';
     item.innerHTML = `
-            <div class="procedure-user-name">${user.fullName}</div>
-            <div style="color: #666; font-size: 12px;">${user.militaryId}</div>
+            <div class="procedure-user-name">${user.fullName || 'N/A'}</div>
+            <div style="color: #666; font-size: 12px;">${user.militaryId || ''}</div>
         `;
     item.addEventListener('click', () => {
       openProcedureForm(user);
     });
     usersList.appendChild(item);
   });
+}
+
+function openUserProceduresModal() {
+  currentProcedureUser = null;
+  const procedureUserSearch = document.getElementById('procedureUserSearch');
+  const procedureUsersList = document.getElementById('procedureUsersList');
+  const procedureFormContainer = document.getElementById('procedureFormContainer');
+
+  if (procedureUserSearch) procedureUserSearch.value = '';
+  if (procedureUsersList) procedureUsersList.classList.remove('hidden-display');
+  if (procedureFormContainer) procedureFormContainer.classList.add('hidden-display');
+
+  renderProcedureUsersList(allFetchedUsers || []);
 
   userProceduresModal.classList.add('show');
   userProceduresModal.style.display = 'flex';
 }
 
 function openProcedureForm(user) {
-  document.getElementById('procedureUsersList').style.display = 'none';
-  document.getElementById('procedureFormContainer').style.display = 'block';
+  currentProcedureUser = user;
+  document.getElementById('procedureUsersList')?.classList.add('hidden-display');
+  document.getElementById('procedureFormContainer')?.classList.remove('hidden-display');
+  document.getElementById('procUserName').value = user.fullName;
+  document.getElementById('adminProcedureForm')?.reset();
   document.getElementById('procUserName').value = user.fullName;
 }
 
-document.getElementById('backToProcedureListBtn').addEventListener('click', () => {
-  document.getElementById('procedureUsersList').style.display = 'block';
-  document.getElementById('procedureFormContainer').style.display = 'none';
+document.getElementById('procedureUserSearch')?.addEventListener('input', (e) => {
+  const term = (e.target.value || '').trim().toLowerCase();
+  const filteredUsers = (allFetchedUsers || []).filter((user) => {
+    const fullName = (user.fullName || '').toLowerCase();
+    const militaryId = (user.militaryId || '').toLowerCase();
+    return fullName.includes(term) || militaryId.includes(term);
+  });
+  renderProcedureUsersList(filteredUsers);
 });
 
-adminProcedureForm.addEventListener('submit', (e) => {
+document.getElementById('procedureUserSearch')?.addEventListener('keydown', (e) => {
+  if (e.key !== 'Enter') return;
   e.preventDefault();
-  alert('Procedure added successfully');
-  document.getElementById('procedureUsersList').style.display = 'block';
-  document.getElementById('procedureFormContainer').style.display = 'none';
+
+  const rawTerm = (e.target.value || '').trim();
+  if (!rawTerm) return;
+
+  const normalizedTerm = rawTerm.toUpperCase();
+  const exactUser = (allFetchedUsers || []).find(
+    (user) => (user.militaryId || '').toUpperCase() === normalizedTerm
+  );
+
+  if (exactUser) {
+    openProcedureForm(exactUser);
+  } else {
+    showNotification(`No exact match found for ${rawTerm}`, 'warning');
+  }
 });
 
-closeUserProceduresModal.addEventListener('click', () => {
+document.getElementById('backToProcedureListBtn')?.addEventListener('click', () => {
+  document.getElementById('procedureUsersList')?.classList.remove('hidden-display');
+  document.getElementById('procedureFormContainer')?.classList.add('hidden-display');
+});
+
+adminProcedureForm?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  if (!currentProcedureUser || !currentProcedureUser.militaryId) {
+    showNotification('Select a user first.');
+    return;
+  }
+
+  const adminToken = getCookie('adminToken');
+  const rawStatus = document.getElementById('procStatus').value;
+  const statusMap = {
+    Pending: 'pending',
+    'In Progress': 'in-progress',
+    Completed: 'completed',
+  };
+
+  const payload = {
+    name: document.getElementById('procProcedureName').value.trim(),
+    requirements: document.getElementById('procRequirements').value.trim(),
+    status: statusMap[rawStatus] || 'pending',
+  };
+
+  try {
+    const response = await fetch(`${API_BASE}/api/user/${currentProcedureUser.militaryId}/procedure`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(adminToken && { Authorization: `Bearer ${adminToken}` }),
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await response.json();
+    if (!response.ok || !data.success) {
+      throw new Error(data.error || 'Failed to add procedure');
+    }
+
+    showNotification('Procedure added successfully', 'success');
+    document.getElementById('procedureUsersList')?.classList.remove('hidden-display');
+    document.getElementById('procedureFormContainer')?.classList.add('hidden-display');
+    fetchAndLoadUsers();
+  } catch (error) {
+    console.error('❌ Procedure add failed:', error);
+    showNotification(error.message || 'Failed to add procedure', 'error');
+  }
+});
+
+closeUserProceduresModal?.addEventListener('click', () => {
   userProceduresModal.classList.remove('show');
   userProceduresModal.style.display = 'none';
-  document.getElementById('procedureUsersList').style.display = 'block';
-  document.getElementById('procedureFormContainer').style.display = 'none';
+  document.getElementById('procedureUsersList')?.classList.remove('hidden-display');
+  document.getElementById('procedureFormContainer')?.classList.add('hidden-display');
 });
 
 // Logout
-adminLogoutBtn.addEventListener('click', () => {
-  adminLogoutModal.classList.add('show');
-  adminLogoutModal.style.display = 'flex';
-});
+if (adminLogoutBtn) {
+  adminLogoutBtn.addEventListener('click', () => {
+    adminLogoutModal.classList.add('show');
+    adminLogoutModal.style.display = 'flex';
+  });
+}
 
-confirmAdminLogoutBtn.addEventListener('click', () => {
-  // Clear admin session cookies
-  document.cookie = 'adminToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-  document.cookie = 'adminEmail=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-  alert('✅ Admin logged out successfully');
-  window.location.href = './index.html';
-});
+if (confirmAdminLogoutBtn) {
+  confirmAdminLogoutBtn.addEventListener('click', async () => {
+    // Clear admin session cookies
+    document.cookie = 'adminToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    document.cookie = 'adminEmail=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    await showNotification('Admin logged out successfully', 'success', 'Logged Out');
+    window.location.href = './index.html';
+  });
+}
 
-cancelAdminLogoutBtn.addEventListener('click', () => {
-  adminLogoutModal.classList.remove('show');
-  adminLogoutModal.style.display = 'none';
-});
+if (cancelAdminLogoutBtn) {
+  cancelAdminLogoutBtn.addEventListener('click', () => {
+    adminLogoutModal.classList.remove('show');
+    adminLogoutModal.style.display = 'none';
+  });
+}
 
 // Close modals on outside click
 window.addEventListener('click', (e) => {
@@ -770,10 +1347,14 @@ window.addEventListener('click', (e) => {
   if (e.target === spouseEditModal) {
     spouseEditModal.classList.remove('show');
     spouseEditModal.style.display = 'none';
+    document.getElementById('spouseUsersList')?.classList.remove('hidden-display');
+    document.getElementById('spouseEditForm')?.classList.add('hidden-display');
   }
   if (e.target === userProceduresModal) {
     userProceduresModal.classList.remove('show');
     userProceduresModal.style.display = 'none';
+    document.getElementById('procedureUsersList')?.classList.remove('hidden-display');
+    document.getElementById('procedureFormContainer')?.classList.add('hidden-display');
   }
   if (e.target === adminLogoutModal) {
     adminLogoutModal.classList.remove('show');
@@ -783,8 +1364,8 @@ window.addEventListener('click', (e) => {
 
 // Close menu when clicking outside
 document.addEventListener('click', (e) => {
-  if (!e.target.closest('.admin-menu')) {
-    adminMenuDropdown.style.display = 'none';
+  if (adminMenuDropdown && !e.target.closest('.admin-menu')) {
+    adminMenuDropdown.classList.add('hidden-display');
   }
 });
 
@@ -804,13 +1385,13 @@ function openImageViewer(imageSrc) {
   const fullSizeImage = document.getElementById('fullSizeImage');
   
   if (!imageSrc || imageSrc.includes('default-avatar')) {
-    alert('No profile picture available');
+    showNotification('No profile picture available');
     return;
   }
   
-  if (fullSizeImage) {
-    fullSizeImage.src = imageSrc;
-  }
+  activeViewerImageSrc = imageSrc;
+  if (fullSizeImage) fullSizeImage.src = imageSrc;
+  resetImageViewerZoom();
   
   if (imageViewerModal) {
     imageViewerModal.style.display = 'block';
@@ -818,15 +1399,83 @@ function openImageViewer(imageSrc) {
   }
 }
 
+function applyImageViewerScale() {
+  const fullSizeImage = document.getElementById('fullSizeImage');
+  if (fullSizeImage) {
+    fullSizeImage.style.transform = `scale(${imageViewerScale})`;
+  }
+}
+
+function setImageViewerScale(nextScale) {
+  imageViewerScale = Math.min(IMAGE_VIEWER_MAX_SCALE, Math.max(IMAGE_VIEWER_MIN_SCALE, nextScale));
+  applyImageViewerScale();
+}
+
+// eslint-disable-next-line no-unused-vars
+function zoomInImageViewer(event) {
+  if (event) event.stopPropagation();
+  setImageViewerScale(imageViewerScale + IMAGE_VIEWER_SCALE_STEP);
+}
+
+// eslint-disable-next-line no-unused-vars
+function zoomOutImageViewer(event) {
+  if (event) event.stopPropagation();
+  setImageViewerScale(imageViewerScale - IMAGE_VIEWER_SCALE_STEP);
+}
+
+// eslint-disable-next-line no-unused-vars
+function resetImageViewerZoom(event) {
+  if (event) event.stopPropagation();
+  setImageViewerScale(1);
+}
+
+// eslint-disable-next-line no-unused-vars
+async function downloadActiveViewerImage(event) {
+  if (event) event.stopPropagation();
+
+  if (!activeViewerImageSrc) {
+    showNotification('No image available to download.');
+    return;
+  }
+
+  const fileNameFromUrl = activeViewerImageSrc.split('/').pop()?.split('?')[0];
+  const safeFileName = fileNameFromUrl || `verification-image-${Date.now()}.jpg`;
+
+  try {
+    const response = await fetch(activeViewerImageSrc, { mode: 'cors' });
+    if (!response.ok) throw new Error('Image fetch failed');
+    const blob = await response.blob();
+    const objectUrl = URL.createObjectURL(blob);
+
+    const downloadLink = document.createElement('a');
+    downloadLink.href = objectUrl;
+    downloadLink.download = safeFileName;
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+    URL.revokeObjectURL(objectUrl);
+  } catch (error) {
+    console.warn('Direct download fallback used:', error);
+    window.open(activeViewerImageSrc, '_blank', 'noopener,noreferrer');
+    showNotification('Download opened in a new tab. Save the image from there if auto-download is blocked.');
+  }
+}
+
 // Close image viewer
 document.addEventListener('DOMContentLoaded', () => {
   const imageViewerModal = document.getElementById('imageViewerModal');
   const closeImageViewer = document.getElementById('closeImageViewer');
+  const fullSizeImage = document.getElementById('fullSizeImage');
+  const zoomInImageBtn = document.getElementById('zoomInImageBtn');
+  const zoomOutImageBtn = document.getElementById('zoomOutImageBtn');
+  const resetZoomImageBtn = document.getElementById('resetZoomImageBtn');
+  const downloadImageBtn = document.getElementById('downloadImageBtn');
   
   if (closeImageViewer) {
     closeImageViewer.addEventListener('click', () => {
       imageViewerModal.style.display = 'none';
       document.body.style.overflow = 'auto';
+      resetImageViewerZoom();
     });
   }
 
@@ -836,8 +1485,41 @@ document.addEventListener('DOMContentLoaded', () => {
       if (e.target === imageViewerModal) {
         imageViewerModal.style.display = 'none';
         document.body.style.overflow = 'auto';
+        resetImageViewerZoom();
       }
     });
+  }
+
+  if (zoomInImageBtn) {
+    zoomInImageBtn.addEventListener('click', (e) => {
+      zoomInImageViewer(e);
+    });
+  }
+
+  if (zoomOutImageBtn) {
+    zoomOutImageBtn.addEventListener('click', (e) => {
+      zoomOutImageViewer(e);
+    });
+  }
+
+  if (resetZoomImageBtn) {
+    resetZoomImageBtn.addEventListener('click', (e) => {
+      resetImageViewerZoom();
+    });
+  }
+
+  if (downloadImageBtn) {
+    downloadImageBtn.addEventListener('click', (e) => {
+      downloadActiveViewerImage(e);
+    });
+  }
+
+  if (fullSizeImage) {
+    fullSizeImage.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const direction = e.deltaY > 0 ? -1 : 1;
+      setImageViewerScale(imageViewerScale + (direction * IMAGE_VIEWER_SCALE_STEP));
+    }, { passive: false });
   }
 
   // Make user detail picture clickable
@@ -856,6 +1538,7 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && imageViewerModal && imageViewerModal.style.display === 'block') {
     imageViewerModal.style.display = 'none';
     document.body.style.overflow = 'auto';
+    resetImageViewerZoom();
   }
 });
 
@@ -867,7 +1550,7 @@ async function approveUser(militaryId) {
 
   const adminToken = getCookie('adminToken');
   if (!adminToken) {
-    alert('Authentication required. Please log in again.');
+    showNotification('Authentication required. Please log in again.');
     window.location.href = './admin-login.html';
     return;
   }
@@ -887,17 +1570,17 @@ async function approveUser(militaryId) {
 
     if (response.ok && data.success) {
       console.log('✅ User approved successfully:', data);
-      alert(`✅ User approved successfully!\n\n${data.user.fullName} can now log in to their account.`);
+      showNotification(`✅ User approved successfully!\n\n${data.user.fullName} can now log in to their account.`);
       
       // Refresh the users list
       fetchAndLoadUsers();
     } else {
       console.error('❌ Approval failed:', data);
-      alert(`Failed to approve user: ${data.error || 'Unknown error'}`);
+      showNotification(`Failed to approve user: ${data.error || 'Unknown error'}`);
     }
   } catch (error) {
     console.error('❌ Error approving user:', error);
-    alert(`Error: ${error.message}`);
+    showNotification(`Error: ${error.message}`);
   }
 }
 
@@ -907,7 +1590,7 @@ async function rejectUser(militaryId) {
   const user = usersToSearch.find((u) => u.militaryId === militaryId);
   
   if (!user) {
-    alert('User not found');
+    showNotification('User not found');
     return;
   }
 
@@ -917,7 +1600,7 @@ async function rejectUser(militaryId) {
 
   const adminToken = getCookie('adminToken');
   if (!adminToken) {
-    alert('Authentication required. Please log in again.');
+    showNotification('Authentication required. Please log in again.');
     window.location.href = './admin-login.html';
     return;
   }
@@ -937,17 +1620,16 @@ async function rejectUser(militaryId) {
 
     if (response.ok && data.success) {
       console.log('✅ User rejected and deleted:', data);
-      alert(`✅ User rejected and removed from system.\n\n${data.deletedUser.fullName} has been permanently deleted.`);
+      showNotification(`✅ User rejected and removed from system.\n\n${data.deletedUser.fullName} has been permanently deleted.`);
       
       // Refresh the users list
       fetchAndLoadUsers();
     } else {
       console.error('❌ Rejection failed:', data);
-      alert(`Failed to reject user: ${data.error || 'Unknown error'}`);
+      showNotification(`Failed to reject user: ${data.error || 'Unknown error'}`);
     }
   } catch (error) {
     console.error('❌ Error rejecting user:', error);
-    alert(`Error: ${error.message}`);
+    showNotification(`Error: ${error.message}`);
   }
 }
-

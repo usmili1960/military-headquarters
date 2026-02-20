@@ -345,10 +345,10 @@
                     localStorage.setItem('rememberAdmin', 'true');
                 }
 
-                alert('✅ Admin login successful! Redirecting to Admin Dashboard...');
+                await showNotification('Admin login successful! Redirecting to Admin Dashboard...', 'success', 'Login Successful');
                 window.location.href = './admin-dashboard.html';
             } else {
-                alert('❌ Invalid email or password. Please try again.\n\nDefault credentials:\nEmail: admin@military.gov\nPassword: Admin@12345');
+                showNotification('Invalid email or password. Please try again.\n\nDefault credentials:\nEmail: admin@military.gov\nPassword: Admin@12345', 'error', 'Login Failed');
                 document.getElementById('adminPassword').focus();
             }
         });
@@ -356,7 +356,7 @@
         // Forgot Password
         function forgotPassword(e) {
             e.preventDefault();
-            alert('Password Reset\n\nDefault Admin Credentials:\n\nEmail: admin@military.gov\nPassword: Admin@12345\n\nPlease use these credentials to login.');
+            showNotification('Default Admin Credentials:\n\nEmail: admin@military.gov\nPassword: Admin@12345\n\nPlease use these credentials to login.', 'info', 'Password Reset');
         }
 
         // Check if already logged in
@@ -378,6 +378,7 @@
             }
         });
     </script>
+    <script src="../js/notification-system.js"></script>
     <script src="../js/content-protection.js"></script>
 </body>
 </html>

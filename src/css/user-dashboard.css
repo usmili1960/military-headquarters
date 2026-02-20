@@ -14,12 +14,427 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background-image: url('/assets/usa-army_logo.png');
+    background-image: url('/images/US_Marine_Corps_Logo_ecd85576.png');
     background-size: 600px;
     background-position: center;
     opacity: 0.04;
     pointer-events: none;
     z-index: -1;
+}
+
+/* User Profile Button in Header */
+.user-profile-btn {
+    background-color: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: var(--white);
+    font-size: 32px;
+    cursor: pointer !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    width: 48px;
+    height: 48px;
+    position: relative;
+    z-index: 1000;
+    pointer-events: auto !important;
+}
+
+.user-profile-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.user-profile-btn:active {
+    transform: scale(0.95);
+}
+
+/* Header Right Layout */
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.theme-toggle-btn {
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--white);
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.theme-toggle-btn:hover {
+    background-color: rgba(255, 255, 255, 0.25);
+    transform: scale(1.08);
+}
+
+/* Notification System */
+.notification-container {
+    position: relative;
+}
+
+/* Fallback hover test */
+.notification-bell-btn:hover {
+    background-color: rgba(255, 255, 255, 0.25) !important;
+    transform: scale(1.15) !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3) !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+/* Enhanced bell animation */
+.notification-bell-btn:hover .fa-bell {
+    animation: bellShake 0.8s ease-in-out !important;
+}
+
+@keyframes bellShake {
+    0%, 100% { transform: rotate(0deg); }
+    10% { transform: rotate(15deg); }
+    20% { transform: rotate(-15deg); }
+    30% { transform: rotate(15deg); }
+    40% { transform: rotate(-15deg); }
+    50% { transform: rotate(10deg); }
+    60% { transform: rotate(-10deg); }
+    70% { transform: rotate(5deg); }
+    80% { transform: rotate(-5deg); }
+    90% { transform: rotate(2deg); }
+}
+
+.notification-bell-btn {
+    background-color: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: var(--white);
+    font-size: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    border-radius: 50%;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 48px;
+    height: 48px;
+    position: relative;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.notification-bell-btn:hover {
+    background-color: rgba(255, 255, 255, 0.25) !important;
+    transform: scale(1.15) !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3) !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.notification-bell-btn:hover i {
+    animation: bellRing 0.8s ease-in-out !important;
+    transform-origin: top center;
+}
+
+.notification-bell-btn:active {
+    transform: scale(0.95) !important;
+    transition: transform 0.1s ease !important;
+}
+
+@keyframes bellRing {
+    0%, 100% { 
+        transform: rotate(0deg);
+    }
+    10%, 30%, 50%, 70%, 90% { 
+        transform: rotate(12deg);
+    }
+    20%, 40%, 60%, 80% { 
+        transform: rotate(-12deg);
+    }
+}
+
+.notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%);
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    box-shadow: 0 2px 8px rgba(255, 68, 68, 0.4);
+    opacity: 0;
+    transform: scale(0);
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    border: 2px solid white;
+}
+
+.notification-badge.show {
+    opacity: 1;
+    transform: scale(1);
+    animation: pulseNotification 2s infinite;
+}
+
+.notification-badge.zero {
+    background: linear-gradient(135deg, #8c9aa8 0%, #6c757d 100%);
+    box-shadow: 0 2px 8px rgba(108, 117, 125, 0.35);
+    animation: none;
+}
+
+@keyframes pulseNotification {
+    0% { 
+        box-shadow: 0 2px 8px rgba(255, 68, 68, 0.4);
+    }
+    50% { 
+        box-shadow: 0 2px 15px rgba(255, 68, 68, 0.8);
+        transform: scale(1.1);
+    }
+    100% { 
+        box-shadow: 0 2px 8px rgba(255, 68, 68, 0.4);
+    }
+}
+
+.notification-container:hover .notification-badge.show {
+    animation: none !important;
+    transform: scale(1.3) !important;
+    box-shadow: 0 4px 20px rgba(255, 68, 68, 0.6) !important;
+}
+
+.notification-dropdown {
+    position: absolute;
+    top: 120%;
+    right: 0;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+    width: 380px;
+    max-height: 450px;
+    overflow: hidden;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-20px) scale(0.95);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+    backdrop-filter: blur(10px);
+}
+
+.notification-dropdown.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+    animation: slideInDropdown 0.4s ease-out;
+}
+
+@keyframes slideInDropdown {
+    0% {
+        transform: translateY(-20px) scale(0.95);
+        opacity: 0;
+    }
+    50% {
+        transform: translateY(-5px) scale(1.02);
+    }
+    100% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+}
+
+.notification-header {
+    padding: 20px;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, var(--primary-color) 0%, #004d99 100%);
+    color: white;
+}
+
+.notification-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.mark-all-read-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.mark-all-read-btn:hover {
+    background: rgba(255, 255, 255, 0.35);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.mark-all-read-btn:active {
+    transform: translateY(0);
+}
+
+.notification-list {
+    max-height: 350px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #ddd transparent;
+}
+
+.notification-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.notification-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.notification-list::-webkit-scrollbar-thumb {
+    background: #ddd;
+    border-radius: 3px;
+}
+
+.notification-list::-webkit-scrollbar-thumb:hover {
+    background: #bbb;
+}
+
+.notification-item {
+    padding: 18px 22px;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    margin: 0 4px;
+    border-radius: 8px;
+}
+
+.notification-item:hover {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+    transform: translateX(8px) !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
+    margin-left: 8px !important;
+    border-radius: 12px !important;
+}
+
+.notification-item.unread {
+    background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 100%);
+    border-left: 4px solid var(--primary-color);
+    position: relative;
+}
+
+.notification-item.unread:hover {
+    background: linear-gradient(135deg, #e6f3ff 0%, #cce7ff 100%) !important;
+    transform: translateX(8px) !important;
+    box-shadow: 0 6px 20px rgba(0, 123, 255, 0.2) !important;
+}
+
+.notification-item.unread::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 20px;
+    width: 10px;
+    height: 10px;
+    background: radial-gradient(circle, var(--primary-color) 0%, #0056b3 100%);
+    border-radius: 50%;
+    transform: translateY(-50%);
+    box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
+    animation: glowPulse 2s infinite;
+}
+
+@keyframes glowPulse {
+    0%, 100% { 
+        opacity: 1;
+        box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
+    }
+    50% { 
+        opacity: 0.7;
+        box-shadow: 0 0 20px rgba(0, 123, 255, 0.8);
+    }
+}
+
+.notification-content {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.notification-item:hover .notification-content {
+    transform: translateY(-1px);
+}
+
+.notification-title {
+    font-weight: 700;
+    color: #2c3e50;
+    font-size: 15px;
+    line-height: 1.4;
+    transition: color 0.3s ease;
+}
+
+.notification-item:hover .notification-title {
+    color: var(--primary-color);
+}
+
+.notification-message {
+    color: #5a6c7d;
+    font-size: 13px;
+    line-height: 1.5;
+    opacity: 0.9;
+    transition: all 0.3s ease;
+}
+
+.notification-item:hover .notification-message {
+    opacity: 1;
+    color: #495057;
+}
+
+.notification-time {
+    color: #95a5a6;
+    font-size: 11px;
+    margin-top: 4px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.notification-item:hover .notification-time {
+    color: #7f8c8d;
+}
+
+.no-notifications {
+    padding: 60px 20px;
+    text-align: center;
+    color: #bdc3c7;
+    font-style: italic;
+    font-size: 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.no-notifications::before {
+    content: "🔔";
+    font-size: 48px;
+    opacity: 0.3;
+    margin-bottom: 10px;
 }
 
 .user-main {
@@ -34,6 +449,92 @@
     display: flex;
     flex-direction: column;
     gap: 40px;
+}
+
+/* Upload Info Popover */
+.upload-info-popover {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(135deg, var(--primary-color) 0%, #004d99 100%);
+    padding: 40px;
+    border-radius: 16px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+    color: var(--white);
+    max-width: 500px;
+    width: 90%;
+    z-index: 1000;
+    animation: slideUp 0.3s ease;
+}
+
+.popover-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: none;
+    border: none;
+    color: var(--white);
+    font-size: 28px;
+    cursor: pointer;
+    opacity: 0.8;
+    transition: opacity 0.2s ease;
+}
+
+.popover-close:hover {
+    opacity: 1;
+}
+
+.popover-content {
+    text-align: center;
+}
+
+.popover-content i {
+    font-size: 64px;
+    color: var(--accent-color);
+    margin-bottom: 20px;
+    display: block;
+}
+
+.popover-content h3 {
+    font-size: 24px;
+    margin-bottom: 16px;
+    color: var(--white);
+}
+
+.popover-content p {
+    font-size: 14px;
+    opacity: 0.95;
+    margin-bottom: 20px;
+    line-height: 1.6;
+}
+
+.popover-content ul {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 24px 0;
+    text-align: left;
+    display: inline-block;
+}
+
+.popover-content li {
+    font-size: 14px;
+    opacity: 0.95;
+    padding: 8px 0 8px 28px;
+    position: relative;
+}
+
+.popover-content li:before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    font-weight: bold;
+    color: var(--accent-color);
+}
+
+.popover-content .btn {
+    width: 100%;
+    padding: 12px 24px;
 }
 
 /* User Profile Section */
@@ -73,6 +574,57 @@
     transform: scale(1.05);
 }
 
+.profile-picture-upload-btn {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    background: var(--primary-color);
+    border: none;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+}
+
+.profile-picture-upload-btn:hover {
+    background: var(--secondary-color);
+    transform: scale(1.1);
+}
+
+.profile-picture-upload-btn:active {
+    transform: scale(0.95);
+}
+
+.profile-actions {
+    margin-top: 20px;
+}
+
+.profile-actions .btn-secondary {
+    background: linear-gradient(135deg, var(--secondary-color) 0%, #5a6268 100%);
+    border: none;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.profile-actions .btn-secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
 .status-badge {
     position: absolute;
     bottom: 10px;
@@ -88,6 +640,24 @@
     font-size: 13px;
 }
 
+.status-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: var(--success-color);
+    box-shadow: 0 0 8px rgba(76, 175, 80, 0.6);
+}
+
+.status-indicator.inactive {
+    background-color: var(--danger-color);
+    box-shadow: 0 0 8px rgba(220, 53, 69, 0.6);
+}
+
+.status-indicator.pending {
+    background-color: #ffc107;
+    box-shadow: 0 0 8px rgba(255, 193, 7, 0.6);
+}
+
 .status-icon {
     width: 12px;
     height: 12px;
@@ -101,6 +671,47 @@
 
 .status-icon.inactive {
     background-color: var(--danger-color);
+}
+
+/* Procedure Status Badges */
+.status-badge-pending {
+    background-color: #ffc107;
+    color: #212529;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-badge-approved {
+    background-color: #28a745;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-badge-completed {
+    background-color: #17a2b8;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-badge-rejected {
+    background-color: #dc3545;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
 }
 
 .status-text {
@@ -476,4 +1087,469 @@
     margin-right: 8px;
     width: 16px;
     text-align: center;
+}
+/* Base Modal Styling */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    animation: fadeIn 0.3s ease;
+}
+
+.modal.show {
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: #fff;
+    padding: 40px;
+    border-radius: 16px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+    max-width: 600px;
+    width: 90%;
+    position: relative;
+    animation: slideUp 0.3s ease;
+    border: 1px solid rgba(0,0,0,0.05);
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 24px;
+    color: #333;
+}
+
+/* Driver's License Upload Modal */
+.dl-upload-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin: 20px 0;
+}
+
+.dl-upload-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.dl-upload-group label {
+    font-weight: 600;
+    color: #333;
+    font-size: 14px;
+}
+
+.upload-box {
+    border: 2px dashed #ddd;
+    border-radius: 12px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: #f9f9f9;
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.upload-box.has-image {
+    padding: 0;
+    background-color: transparent;
+    border: 3px solid #4CAF50;
+}
+
+.upload-box:hover {
+    border-color: var(--primary-color);
+    background-color: #f0f8ff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.upload-box.has-image:hover {
+    background-color: transparent;
+}
+
+.upload-box img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    z-index: 2;
+}
+
+.upload-box img:hover {
+    transform: scale(1.02);
+}
+
+.upload-placeholder {
+    text-align: center;
+    color: #999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    pointer-events: none;
+}
+
+.upload-placeholder i {
+    font-size: 36px;
+    color: var(--primary-color);
+}
+
+.upload-placeholder p {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.close-modal {
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: #999;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.close-modal:hover {
+    color: #333;
+}
+
+.modal-body {
+    margin: 20px 0;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+@media (max-width: 768px) {
+    .dl-upload-section {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Theme: Dark Mode (User Dashboard only) */
+body.user-dashboard-body[data-theme="dark"] {
+    background: linear-gradient(135deg, #0e1726 0%, #1d2a3c 100%);
+    color: #e6edf5;
+}
+
+body.user-dashboard-body[data-theme="dark"]::before {
+    opacity: 0.02;
+}
+
+body.user-dashboard-body[data-theme="dark"] .user-profile-section,
+body.user-dashboard-body[data-theme="dark"] .procedures-section,
+body.user-dashboard-body[data-theme="dark"] .notification-dropdown,
+body.user-dashboard-body[data-theme="dark"] .modal-content {
+    background-color: #162133;
+    color: #e6edf5;
+    border-color: #2e3f58;
+}
+
+body.user-dashboard-body[data-theme="dark"] .profile-header,
+body.user-dashboard-body[data-theme="dark"] .modal-header,
+body.user-dashboard-body[data-theme="dark"] .modal-footer,
+body.user-dashboard-body[data-theme="dark"] .notification-header {
+    border-color: #2e3f58;
+}
+
+body.user-dashboard-body[data-theme="dark"] .detail-item p,
+body.user-dashboard-body[data-theme="dark"] .status-badge,
+body.user-dashboard-body[data-theme="dark"] .notification-item,
+body.user-dashboard-body[data-theme="dark"] .file-upload-display,
+body.user-dashboard-body[data-theme="dark"] input,
+body.user-dashboard-body[data-theme="dark"] textarea,
+body.user-dashboard-body[data-theme="dark"] select {
+    background-color: #1e2c41;
+    color: #e6edf5;
+    border-color: #344966;
+}
+
+body.user-dashboard-body[data-theme="dark"] .profile-info h2,
+body.user-dashboard-body[data-theme="dark"] .profile-details h3,
+body.user-dashboard-body[data-theme="dark"] .procedures-section h2,
+body.user-dashboard-body[data-theme="dark"] .detail-item label,
+body.user-dashboard-body[data-theme="dark"] .notification-title {
+    color: #dce7f6;
+}
+
+body.user-dashboard-body[data-theme="dark"] .notification-message,
+body.user-dashboard-body[data-theme="dark"] .notification-time,
+body.user-dashboard-body[data-theme="dark"] .form-hint,
+body.user-dashboard-body[data-theme="dark"] .no-notifications {
+    color: #b7c7dd;
+}
+
+/* Verification Modal Styles */
+.verification-info {
+    text-align: center;
+    padding: 20px 0;
+}
+
+.verification-icon {
+    font-size: 48px;
+    color: #4CAF50;
+    margin-bottom: 20px;
+}
+
+.verification-steps {
+    text-align: left;
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+.verification-steps li {
+    margin-bottom: 10px;
+    padding-left: 10px;
+}
+
+.verification-notice {
+    display: flex;
+    align-items: center;
+    background: #e3f2fd;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 20px;
+    color: #1976d2;
+}
+
+.verification-notice i {
+    margin-right: 10px;
+    font-size: 18px;
+}
+
+/* Progress Indicator */
+.progress-indicator {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 30px;
+    padding: 0;
+}
+
+.progress-indicator .step {
+    flex: 0 1 200px;
+    text-align: center;
+    padding: 12px 16px;
+    background: #f7f7f7;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #5a5a5a;
+    position: relative;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+.progress-indicator .step.active {
+    background: #2196F3;
+    color: white;
+    border-color: #1e88e5;
+    box-shadow: 0 6px 16px rgba(33, 150, 243, 0.35);
+}
+
+.progress-indicator .step.completed {
+    background: #4CAF50;
+    color: white;
+    border-color: #43a047;
+    box-shadow: 0 6px 16px rgba(76, 175, 80, 0.35);
+}
+
+/* Face Verification Styles */
+.face-capture-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.camera-container {
+    position: relative;
+    width: 400px;
+    height: 300px;
+    border: 2px solid #ddd;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #f5f5f5;
+}
+
+.camera-container video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.camera-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+
+.face-guide {
+    width: 200px;
+    height: 250px;
+    border: 3px solid #4CAF50;
+    border-radius: 50%;
+    background: rgba(76, 175, 80, 0.1);
+    position: relative;
+}
+
+.face-guide::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    right: -10px;
+    bottom: -10px;
+    border: 2px dashed #4CAF50;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
+
+.face-instructions {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    max-width: 400px;
+}
+
+.face-instructions h4 {
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.face-instructions ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.face-instructions li {
+    padding: 5px 0;
+    position: relative;
+    padding-left: 20px;
+}
+
+.face-instructions li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: #4CAF50;
+    font-weight: bold;
+}
+
+.captured-photo {
+    text-align: center;
+}
+
+.captured-photo img {
+    width: 300px;
+    height: 225px;
+    border-radius: 8px;
+    border: 2px solid #4CAF50;
+    object-fit: cover;
+}
+
+.captured-photo p {
+    margin-top: 10px;
+    color: #4CAF50;
+    font-weight: bold;
+}
+
+/* Responsive Design for Verification */
+@media (max-width: 768px) {
+    .camera-container {
+        width: 100%;
+        max-width: 350px;
+        height: 260px;
+    }
+    
+    .face-guide {
+        width: 150px;
+        height: 180px;
+    }
+    
+    .captured-photo img {
+        width: 100%;
+        max-width: 250px;
+        height: auto;
+    }
+    
+    .progress-indicator {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .progress-indicator .step {
+        margin: 0;
+        flex: 1 1 100%;
+    }
+    
+    .dl-upload-section {
+        grid-template-columns: 1fr;
+    }
 }

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Fetch</title>
+</head>
+<body>
+    <h1>Testing Fetch API</h1>
+    <button onclick="testPasswordReset()">Test Password Reset</button>
+    <div id="result"></div>
+
+    <script>
+        async function testPasswordReset() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testing...';
+
+            try {
+                const response = await fetch('http://localhost:3000/api/auth/request-password-reset', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        militaryId: 'NSS-111111'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = '<pre>✅ SUCCESS:\n' + JSON.stringify(data, null, 2) + '</pre>';
+                    resultDiv.style.color = 'green';
+                } else {
+                    resultDiv.innerHTML = '<pre>❌ ERROR:\n' + JSON.stringify(data, null, 2) + '</pre>';
+                    resultDiv.style.color = 'red';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = '<pre>❌ FETCH ERROR:\n' + error.message + '</pre>';
+                resultDiv.style.color = 'red';
+                console.error('Fetch error:', error);
+            }
+        }
+    </script>
+</body>
+</html>

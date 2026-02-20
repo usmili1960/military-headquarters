@@ -1,5 +1,6 @@
 /* eslint-disable no-undef, no-use-before-define */
 /* global window, document, localStorage, sessionStorage, alert, FileReader */
+/* global showNotification, showConfirmation, showLoader, hideLoader */
 
 // Homepage JavaScript
 
@@ -18,8 +19,21 @@ console.log('🌐 API Base URL:', API_BASE);
 console.log('🌐 Page Location:', `${window.location.hostname}:${window.location.port}`);
 let currentSlideIndex = 1;
 
+// Initialize all event listeners after DOM is loaded
+document.addEventListener('DOMContentLoaded', initializeHomepage);
+
+function initializeHomepage() {
+  console.log('🚀 Initializing homepage...');
+  
+  // Initialize video
+  initializeVideo();
+  
+  // Initialize modals and forms
+  initializeModals();
+}
+
 // Video background initialization
-document.addEventListener('DOMContentLoaded', () => {
+function initializeVideo() {
   const video = document.getElementById('homepageVideo');
   if (video) {
     // Set the video to start from 9 seconds
@@ -30,33 +44,189 @@ document.addEventListener('DOMContentLoaded', () => {
       // Some browsers prevent autoplay, user may need to interact
     });
   }
-});
+}
 
-// Modal handling
-const loginModal = document.getElementById('loginModal');
-const signupModal = document.getElementById('signupModal');
-const verificationModal = document.getElementById('verificationModal');
-const forgotPasswordModal = document.getElementById('forgotPasswordModal');
-const loginBtn = document.getElementById('loginBtn');
-const closeLoginModal = document.getElementById('closeLoginModal');
-const closeSignupModal = document.getElementById('closeSignupModal');
-const closeVerificationModal = document.getElementById('closeVerificationModal');
-const closeForgotPasswordModal = document.getElementById('closeForgotPasswordModal');
+// Initialize modals and event listeners
+function initializeModals() {
+  // Modal handling
+  const loginModal = document.getElementById('loginModal');
+  const signupModal = document.getElementById('signupModal');
+  const verificationModal = document.getElementById('verificationModal');
+  const forgotPasswordModal = document.getElementById('forgotPasswordModal');
+  const loginBtn = document.getElementById('loginBtn');
+  const closeLoginModal = document.getElementById('closeLoginModal');
+  const closeSignupModal = document.getElementById('closeSignupModal');
+  const closeVerificationModal = document.getElementById('closeVerificationModal');
+  const closeForgotPasswordModal = document.getElementById('closeForgotPasswordModal');
 
-// Tab switching (removed - admin login moved to separate page)
+  // Check if elements exist
+  if (!loginBtn) {
+    console.error('❌ Login button not found!');
+    return;
+  }
+  
+  console.log('✅ Login button found, attaching event listener');
 
-// Form elements
-const userLoginForm = document.getElementById('userLoginForm');
-const userSignupForm = document.getElementById('userSignupForm');
-const userSignupBtn = document.getElementById('userSignupBtn');
-const forgotPasswordBtn = document.getElementById('forgotPasswordBtn');
-const verificationForm = document.getElementById('verificationForm');
+  // Form elements
+  const userLoginForm = document.getElementById('userLoginForm');
+  const userSignupForm = document.getElementById('userSignupForm');
+  const userSignupBtn = document.getElementById('userSignupBtn');
+  const forgotPasswordBtn = document.getElementById('forgotPasswordBtn');
+  const verificationForm = document.getElementById('verificationForm');
 
-// Debug: Log if verification form is found
-if (verificationForm) {
-  console.log('✅ Verification form found, attaching listener');
-} else {
-  console.error('❌ Verification form NOT found!');
+  // Debug: Log if verification form is found
+  if (verificationForm) {
+    console.log('✅ Verification form found, attaching listener');
+  } else {
+    console.error('❌ Verification form NOT found!');
+  }
+
+  // Event Listeners - Login Modal
+  loginBtn.addEventListener('click', () => {
+    console.log('🔓 Login button clicked!');
+    // Clear login form inputs
+    if (userLoginForm) userLoginForm.reset();
+    const milIdInput = document.getElementById('userMilID');
+    const passwordInput = document.getElementById('userPassword');
+    if (milIdInput) milIdInput.value = '';
+    if (passwordInput) passwordInput.value = '';
+    if (loginModal) {
+      loginModal.classList.add('show');
+      loginModal.style.display = 'flex';
+    }
+  });
+
+  if (closeLoginModal) {
+    closeLoginModal.addEventListener('click', () => {
+      loginModal.classList.remove('show');
+      loginModal.style.display = 'none';
+    });
+  }
+
+  window.addEventListener('click', (e) => {
+    if (e.target === loginModal) {
+      loginModal.classList.remove('show');
+      loginModal.style.display = 'none';
+    }
+    if (e.target === signupModal) {
+      signupModal.classList.remove('show');
+      signupModal.style.display = 'none';
+    }
+    if (e.target === verificationModal) {
+      verificationModal.classList.remove('show');
+      verificationModal.style.display = 'none';
+    }
+    if (e.target === forgotPasswordModal) {
+      forgotPasswordModal.classList.remove('show');
+      forgotPasswordModal.style.display = 'none';
+    }
+  });
+
+  // User Signup
+  if (userSignupBtn) {
+    userSignupBtn.addEventListener('click', () => {
+      if (loginModal) {
+        loginModal.classList.remove('show');
+        loginModal.style.display = 'none';
+      }
+      if (signupModal) {
+        signupModal.classList.add('show');
+        signupModal.style.display = 'flex';
+      }
+    });
+  }
+
+  if (closeSignupModal) {
+    closeSignupModal.addEventListener('click', () => {
+      signupModal.classList.remove('show');
+      signupModal.style.display = 'none';
+    });
+  }
+
+  if (closeVerificationModal) {
+    closeVerificationModal.addEventListener('click', () => {
+      verificationModal.classList.remove('show');
+      verificationModal.style.display = 'none';
+    });
+  }
+
+  if (closeForgotPasswordModal) {
+    closeForgotPasswordModal.addEventListener('click', () => {
+      forgotPasswordModal.classList.remove('show');
+      forgotPasswordModal.style.display = 'none';
+    });
+  }
+
+  // User Signup Form Submit
+  if (userSignupForm) {
+    attachSignupFormListener(userSignupForm, signupModal, verificationModal);
+  }
+
+  // Verification Form Submit
+  if (verificationForm) {
+    attachVerificationFormListener(verificationForm, verificationModal, signupModal, userSignupForm, loginModal);
+  }
+
+  // User Login Form Submit
+  if (userLoginForm) {
+    attachLoginFormListener(userLoginForm);
+  }
+
+  // Forgotten Password
+  if (forgotPasswordBtn) {
+    forgotPasswordBtn.addEventListener('click', () => {
+      console.log('🔐 Forgot password button clicked');
+      
+      if (loginModal) {
+        loginModal.classList.remove('show');
+        loginModal.style.display = 'none';
+      }
+      if (forgotPasswordModal) {
+        console.log('📋 Resetting forgot password modal steps');
+        
+        // Reset all steps to initial state
+        const step1 = document.getElementById('forgotPasswordStep1');
+        const step2 = document.getElementById('forgotPasswordStep2');
+        const step3 = document.getElementById('forgotPasswordStep3');
+        
+        console.log('Steps found:', { step1: !!step1, step2: !!step2, step3: !!step3 });
+        
+        // Show step 1, hide others using classList to properly handle hidden-display
+        if (step1) {
+          step1.classList.remove('hidden-display');
+          step1.style.display = 'block';
+        }
+        if (step2) {
+          step2.classList.add('hidden-display');
+          step2.style.display = 'none';
+        }
+        if (step3) {
+          step3.classList.add('hidden-display');
+          step3.style.display = 'none';
+        }
+        
+        // Hide the manual code entry initially
+        const manualCodeEntry = document.getElementById('manualCodeEntry');
+        if (manualCodeEntry) {
+          manualCodeEntry.classList.add('hidden-display');
+          manualCodeEntry.style.display = 'none';
+        }
+        
+        // Clear forms
+        const step1Form = document.getElementById('forgotPasswordStep1Form');
+        if (step1Form) step1Form.reset();
+        
+        // Clear any previous session data
+        sessionStorage.removeItem('resetPasswordUser');
+        
+        // Show the modal
+        forgotPasswordModal.classList.add('show');
+        forgotPasswordModal.style.display = 'flex';
+        
+        console.log('✅ Forgot password modal opened');
+      }
+    });
+  }
 }
 
 // Function to send verification code via email and/or SMS
@@ -93,53 +263,8 @@ function sendVerificationCode(email, phone, code) {
     });
 }
 
-// Event Listeners - Login Modal
-loginBtn.addEventListener('click', () => {
-  // Clear login form inputs
-  userLoginForm.reset();
-  document.getElementById('userMilID').value = '';
-  document.getElementById('userPassword').value = '';
-  loginModal.classList.add('show');
-  loginModal.style.display = 'flex';
-});
-
-closeLoginModal.addEventListener('click', () => {
-  loginModal.classList.remove('show');
-  loginModal.style.display = 'none';
-});
-
-window.addEventListener('click', (e) => {
-  if (e.target === loginModal) {
-    loginModal.classList.remove('show');
-    loginModal.style.display = 'none';
-  }
-  if (e.target === signupModal) {
-    signupModal.classList.remove('show');
-    signupModal.style.display = 'none';
-  }
-  if (e.target === verificationModal) {
-    verificationModal.classList.remove('show');
-    verificationModal.style.display = 'none';
-  }
-  if (e.target === forgotPasswordModal) {
-    forgotPasswordModal.classList.remove('show');
-    forgotPasswordModal.style.display = 'none';
-  }
-});
-
-// User Signup
-userSignupBtn.addEventListener('click', () => {
-  loginModal.classList.remove('show');
-  loginModal.style.display = 'none';
-  signupModal.classList.add('show');
-  signupModal.style.display = 'flex';
-});
-
-closeSignupModal.addEventListener('click', () => {
-  signupModal.classList.remove('show');
-  signupModal.style.display = 'none';
-});
-
+// Attach signup form listener
+function attachSignupFormListener(userSignupForm, signupModal, verificationModal) {
 // User Signup Form Submit
 userSignupForm.addEventListener('submit', (e) => {
   e.preventDefault();
@@ -148,7 +273,7 @@ userSignupForm.addEventListener('submit', (e) => {
   // Validate Military ID format (NSS-XXXXXX)
   const militaryId = formData.get('militaryId').trim();
   if (!militaryId.match(/^NSS-\d{6}$/)) {
-    alert('Military ID must be in format NSS-XXXXXX (6 digits)');
+    showNotification('Military ID must be in format NSS-XXXXXX (6 digits)', 'warning');
     return;
   }
 
@@ -156,18 +281,21 @@ userSignupForm.addEventListener('submit', (e) => {
   const password = formData.get('password');
   const confirmPassword = formData.get('confirmPassword');
   if (password !== confirmPassword) {
-    alert('Passwords do not match. Please try again.');
+    showNotification('Passwords do not match. Please try again.', 'warning');
     return;
   }
 
   if (password.length < 6) {
-    alert('Password must be at least 6 characters long');
+    showNotification('Password must be at least 6 characters long', 'warning');
     return;
   }
 
   // Get user email and phone
   const email = formData.get('email');
   const mobile = formData.get('mobile');
+
+  // Show loader
+  showLoader('Generating verification code...');
 
   // Generate a 6-digit verification code
   const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
@@ -180,11 +308,16 @@ userSignupForm.addEventListener('submit', (e) => {
   // Send verification code via email and/or SMS
   sendVerificationCode(email, mobile, verificationCode);
 
-  // Show verification modal with message about where code was sent
-  signupModal.classList.remove('show');
-  signupModal.style.display = 'none';
-  verificationModal.classList.add('show');
-  verificationModal.style.display = 'flex';
+  // Hide loader
+  setTimeout(() => {
+    hideLoader();
+    
+    // Show verification modal with message about where code was sent
+    signupModal.classList.remove('show');
+    signupModal.style.display = 'none';
+    verificationModal.classList.add('show');
+    verificationModal.style.display = 'flex';
+  }, 800);
 
   // Update verification message and display code
   const verificationMessage = document.querySelector('#verificationModal p[data-i18n="verification-code-sent"]');
@@ -221,12 +354,10 @@ userSignupForm.addEventListener('submit', (e) => {
   );
   verificationCodeDisplay.className = 'verification-code-display';
 });
+}
 
-closeVerificationModal.addEventListener('click', () => {
-  verificationModal.classList.remove('show');
-  verificationModal.style.display = 'none';
-});
-
+// Attach verification form listener
+function attachVerificationFormListener(verificationForm, verificationModal, signupModal, userSignupForm, loginModal) {
 // Verification Form Submit
 verificationForm.addEventListener('submit', (e) => {
   e.preventDefault();
@@ -234,16 +365,20 @@ verificationForm.addEventListener('submit', (e) => {
 
   if (userEnteredCode.length !== 6 || Number.isNaN(Number(userEnteredCode))) {
     // eslint-disable-next-line no-alert
-    alert('Please enter a valid 6-digit verification code');
+    showNotification('Please enter a valid 6-digit verification code', 'warning');
     return;
   }
+
+  // Show loader
+  showLoader('Verifying code...');
 
   // Get signup data
   const signupDataStr = sessionStorage.getItem('signupData');
 
   if (!signupDataStr) {
     console.error('❌ No signup data found in sessionStorage');
-    alert('Session expired. Please sign up again.');
+    hideLoader();
+    showNotification('Session expired. Please sign up again.', 'warning', 'Session Expired');
     verificationModal.classList.remove('show');
     verificationModal.style.display = 'none';
     signupModal.classList.add('show');
@@ -262,12 +397,19 @@ verificationForm.addEventListener('submit', (e) => {
   // Validate verification code
   if (userEnteredCode !== correctCode) {
     console.error('❌ Verification code mismatch');
-    alert('Invalid verification code. Please try again.');
+    hideLoader();
+    showNotification('Invalid verification code. Please try again.', 'error', 'Invalid Code');
     document.getElementById('verificationCode').value = '';
     return;
   }
 
   console.log('✅ Verification code matched! Registering user...');
+
+  // Update loader message
+  setTimeout(() => {
+    const loaderMsg = document.getElementById('loaderMessage');
+    if (loaderMsg) loaderMsg.textContent = 'Creating your account...';
+  }, 300);
 
   // Register user with backend
   const userData = {
@@ -316,11 +458,12 @@ verificationForm.addEventListener('submit', (e) => {
       }
       return response.json();
     })
-    .then((data) => {
+    .then(async (data) => {
       console.log('✅ Registration response data:', data);
       if (!data.success) {
         console.error('❌ Registration failed:', data.error);
-        alert(`Registration failed: ${data.error || 'Unknown error'}`);
+        hideLoader();
+        showNotification(`Registration failed: ${data.error || 'Unknown error'}`, 'error', 'Registration Failed');
         return;
       }
 
@@ -344,7 +487,8 @@ verificationForm.addEventListener('submit', (e) => {
         verificationModal.classList.remove('show');
         verificationModal.style.display = 'none';
         
-        alert('Account created successfully! Your account is pending admin approval.\n\nYou will be redirected to the status page.');
+        hideLoader();
+        await showNotification('Account created successfully! Your account is pending admin approval.\n\nYou will be redirected to the status page.', 'success', 'Account Created');
         
         // Redirect to pending approval page
         setTimeout(() => {
@@ -388,7 +532,8 @@ verificationForm.addEventListener('submit', (e) => {
         console.log('⚠️ User already exists in localStorage, not duplicating');
       }
 
-      alert('Account created successfully! You can now login.');
+      hideLoader();
+      await showNotification('Account created successfully! You can now login.', 'success', 'Account Created');
 
       // Clear forms
       userSignupForm.reset();
@@ -421,7 +566,7 @@ verificationForm.addEventListener('submit', (e) => {
       // Check if user already exists
       const exists = users.find((u) => u.militaryId === userData.militaryId);
       if (exists) {
-        alert('This Military ID is already registered. Please login instead.');
+        showNotification('This Military ID is already registered. Please login instead.', 'warning', 'Already Registered');
         verificationModal.classList.remove('show');
         verificationModal.style.display = 'none';
         loginModal.classList.add('show');
@@ -449,7 +594,7 @@ verificationForm.addEventListener('submit', (e) => {
       localStorage.setItem('militaryUsers', JSON.stringify(users));
       console.log('✅ User registered to localStorage (fallback):', newUser);
 
-      alert('Account created successfully! (Offline mode). You can now login.');
+      showNotification('Account created successfully! (Offline mode). You can now login.', 'success', 'Account Created');
 
       // Clear forms
       userSignupForm.reset();
@@ -463,6 +608,10 @@ verificationForm.addEventListener('submit', (e) => {
       loginModal.style.display = 'flex';
     });
 });
+}
+
+// Attach login form listener
+function attachLoginFormListener(userLoginForm) {
 // User Login Form Submit
 userLoginForm.addEventListener('submit', (e) => {
   e.preventDefault();
@@ -471,11 +620,14 @@ userLoginForm.addEventListener('submit', (e) => {
 
   // Validate Military ID format
   if (!militaryId.match(/^NSS-\d{6}$/)) {
-    alert('Military ID must be in format NSS-XXXXXX');
+    showNotification('Military ID must be in format NSS-XXXXXX', 'warning');
     return;
   }
 
   console.log('🔐 Attempting login with Military ID:', militaryId);
+
+  // Show loader
+  showLoader('Logging in...');
 
   // Try backend login first
   fetch(`${API_BASE}/api/auth/login`, {
@@ -497,7 +649,7 @@ userLoginForm.addEventListener('submit', (e) => {
       }
       return response.json();
     })
-    .then((data) => {
+    .then(async (data) => {
       console.log('✅ Login response:', data);
       if (!data.success) {
         console.log('Backend returned success: false -', data.error);
@@ -511,7 +663,8 @@ userLoginForm.addEventListener('submit', (e) => {
           sessionStorage.setItem('pendingUserMilitaryId', data.user.militaryId);
           sessionStorage.setItem('pendingUserEmail', data.user.email);
           
-          alert('Your account is pending admin approval. You will be redirected to the status page.');
+          hideLoader();
+          await showNotification('Your account is pending admin approval. You will be redirected to the status page.', 'info', 'Pending Approval');
           window.location.href = './pages/pending-approval.html';
           return;
         }
@@ -525,13 +678,15 @@ userLoginForm.addEventListener('submit', (e) => {
       // Set token in cookie (7 days expiry)
       const expiryDate = new Date();
       expiryDate.setDate(expiryDate.getDate() + 7);
-      
+
       console.log('📝 Setting authentication data...');
-      
+
       // Store token in cookie (small, secure)
       document.cookie = `userToken=${data.token}; expires=${expiryDate.toUTCString()}; path=/; SameSite=Strict`;
       document.cookie = `userMilitaryId=${militaryId}; expires=${expiryDate.toUTCString()}; path=/; SameSite=Strict`;
-      
+      // Store user data in cookie for dashboard compatibility
+      document.cookie = `currentUser=${encodeURIComponent(JSON.stringify(data.user))}; expires=${expiryDate.toUTCString()}; path=/; SameSite=Strict`;
+
       // Store user data in localStorage (no size limit)
       localStorage.setItem('currentUser', JSON.stringify(data.user));
       localStorage.setItem('userLoggedIn', 'true');
@@ -539,36 +694,42 @@ userLoginForm.addEventListener('submit', (e) => {
       console.log('✅ Authentication data saved');
       console.log('🍪 Cookies:', document.cookie);
       console.log('💾 localStorage user:', data.user.fullName);
-      console.log('📍 Redirecting to: ./pages/user-dashboard.html');
-      
+      console.log('📍 Redirecting to: ./user-dashboard.html');
+
+      // Hide loader
+      hideLoader();
+
       // Small delay to ensure data is saved before redirect
       setTimeout(() => {
-        window.location.href = './pages/user-dashboard.html';
+        window.location.href = './user-dashboard.html';
       }, 100);
     })
     .catch((error) => {
       console.error('❌ Backend login error:', error.message);
-      alert(`Login failed: ${error.message}\\n\\nPlease make sure you are registered and the server is running.`);
+      hideLoader();
+      showNotification(`Login failed: ${error.message}\\n\\nPlease make sure you are registered and the server is running.`, 'error', 'Login Failed');
     });
 });
+}
 
-// Forgotten Password
-forgotPasswordBtn.addEventListener('click', () => {
-  loginModal.classList.remove('show');
-  loginModal.style.display = 'none';
-  forgotPasswordModal.classList.add('show');
-  forgotPasswordModal.style.display = 'flex';
+// Forgotten Password - handled in initializeModals()
+// Remove duplicate listener
+// forgotPasswordBtn.addEventListener('click', () => {
+//   loginModal.classList.remove('show');
+//   loginModal.style.display = 'none';
+//   forgotPasswordModal.classList.add('show');
+//   forgotPasswordModal.style.display = 'flex';
 
-  // Reset form to step 1
-  document.getElementById('forgotPasswordStep1').style.display = 'block';
-  document.getElementById('forgotPasswordStep2').style.display = 'none';
-  document.getElementById('forgotPasswordStep3').style.display = 'none';
-});
+//   // Reset form to step 1
+//   document.getElementById('forgotPasswordStep1').style.display = 'block';
+//   document.getElementById('forgotPasswordStep2').style.display = 'none';
+//   document.getElementById('forgotPasswordStep3').style.display = 'none';
+// });
 
-closeForgotPasswordModal.addEventListener('click', () => {
-  forgotPasswordModal.classList.remove('show');
-  forgotPasswordModal.style.display = 'none';
-});
+// closeForgotPasswordModal.addEventListener('click', () => {
+//   forgotPasswordModal.classList.remove('show');
+//   forgotPasswordModal.style.display = 'none';
+// });
 
 // Forgot Password Step 1 - Enter Military ID
 document.getElementById('forgotPasswordStep1Form').addEventListener('submit', async (e) => {
@@ -578,7 +739,7 @@ document.getElementById('forgotPasswordStep1Form').addEventListener('submit', as
 
   // Validate Military ID format
   if (!militaryId.match(/^NSS-\d{6}$/)) {
-    alert('Military ID must be in format NSS-XXXXXX');
+    showNotification('Military ID must be in format NSS-XXXXXX');
     return;
   }
 
@@ -600,25 +761,45 @@ document.getElementById('forgotPasswordStep1Form').addEventListener('submit', as
       throw new Error(data.error || 'User not found');
     }
 
-    console.log('✅ Reset code generated:', data.code);
+    console.log('✅ Reset code requested for:', militaryId);
 
     // Store user info for password reset
     sessionStorage.setItem('resetPasswordUser', JSON.stringify({
       militaryId: militaryId,
       email: data.email,
       mobile: data.mobile,
-      resetCode: data.code, // Store for verification
     }));
 
-    // Move to step 2 - Show verification code
-    document.getElementById('forgotPasswordStep1').style.display = 'none';
-    document.getElementById('forgotPasswordStep2').style.display = 'block';
+    // Move to step 2 - Show verification code input
+    const step1 = document.getElementById('forgotPasswordStep1');
+    const step2 = document.getElementById('forgotPasswordStep2');
+    
+    // Hide step 1
+    step1.classList.add('hidden-display');
+    step1.style.display = 'none';
+    
+    // Show step 2
+    step2.classList.remove('hidden-display');
+    step2.style.display = 'block';
+    
+    // Hide the sending indicator and show the code input form
+    document.getElementById('emailSendingIndicator').style.display = 'none';
+    const manualCodeEntry = document.getElementById('manualCodeEntry');
+    manualCodeEntry.classList.remove('hidden-display');
+    manualCodeEntry.style.display = 'block';
 
-    // Update message
-    document.getElementById('forgotPasswordStep2Message').textContent = 
-      `A 6-digit reset code has been generated. Code: ${data.code}`;
+    // Update message to indicate email was sent
+    const maskedEmail = data.email?.replace(/(.{2}).*(@.*)/, '$1***$2') || 'your email';
+    document.getElementById('forgotPasswordStep2Message').innerHTML = 
+      `<strong>Verification code sent!</strong><br>Please check your email (${maskedEmail}) and enter the 6-digit code below.`;
 
-    alert(`Reset code: ${data.code}\n\n(In production, this will be sent via email/SMS)`);
+    // Show success message
+    showNotification('Verification code sent to your email. Please check your inbox and enter the code below.');
+
+    // Focus on the verification code input
+    setTimeout(() => {
+      document.getElementById('forgotVerificationCode').focus();
+    }, 100);
 
   } catch (error) {
     console.error('❌ Error:', error.message);
@@ -639,7 +820,7 @@ document.getElementById('toggleSmsBtn').addEventListener('click', () => {
 document.getElementById('sendSmsBtn').addEventListener('click', () => {
   const phoneNumber = document.getElementById('forgotPhoneNumber').value.trim();
   if (!phoneNumber) {
-    alert('Please enter a phone number');
+    showNotification('Please enter a phone number');
     return;
   }
 
@@ -650,7 +831,7 @@ document.getElementById('sendSmsBtn').addEventListener('click', () => {
 
   sendPasswordResetCode(userData.email, phoneNumber, verificationCode, true);
 
-  alert('Verification code sent to SMS!');
+  showNotification('Verification code sent to SMS!');
 });
 
 // Verify password reset code
@@ -661,7 +842,7 @@ document.getElementById('forgotPasswordVerificationForm').addEventListener('subm
   const submitBtn = e.target.querySelector('button[type="submit"]');
 
   if (!enteredCode || enteredCode.length !== 6) {
-    alert('Please enter the 6-digit code');
+    showNotification('Please enter the 6-digit code');
     return;
   }
 
@@ -687,8 +868,16 @@ document.getElementById('forgotPasswordVerificationForm').addEventListener('subm
     console.log('✅ Code verified successfully');
 
     // Code is correct, move to step 3 - Reset password
-    document.getElementById('forgotPasswordStep2').style.display = 'none';
-    document.getElementById('forgotPasswordStep3').style.display = 'block';
+    const step2 = document.getElementById('forgotPasswordStep2');
+    const step3 = document.getElementById('forgotPasswordStep3');
+    
+    // Hide step 2
+    step2.classList.add('hidden-display');
+    step2.style.display = 'none';
+    
+    // Show step 3
+    step3.classList.remove('hidden-display');
+    step3.style.display = 'block';
 
   } catch (error) {
     console.error('❌ Verification error:', error.message);
@@ -708,12 +897,12 @@ document.getElementById('resetPasswordForm').addEventListener('submit', async (e
   const submitBtn = e.target.querySelector('button[type="submit"]');
 
   if (newPassword !== confirmPassword) {
-    alert('Passwords do not match');
+    showNotification('Passwords do not match');
     return;
   }
 
   if (newPassword.length < 6) {
-    alert('Password must be at least 6 characters long');
+    showNotification('Password must be at least 6 characters long');
     return;
   }
 
@@ -738,7 +927,7 @@ document.getElementById('resetPasswordForm').addEventListener('submit', async (e
     }
 
     console.log('✅ Password reset successfully');
-    alert('Password has been reset successfully! You can now login with your new password.');
+    showNotification('Password has been reset successfully! You can now login with your new password.');
 
     // Clear session storage
     sessionStorage.removeItem('resetPasswordUser');

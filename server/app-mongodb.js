@@ -606,7 +606,8 @@ app.post('/api/user/:militaryId/procedure', async (req, res) => {
       return res.status(503).json({ error: 'Database unavailable' });
     }
 
-    const { name, requirements, status } = req.body;
+    const { name, requirements, status, priority, dueDate } = req.body;
+    const normalizedStatus = (status || 'pending').toString().toLowerCase();
 
     const user = await User.findOne({ militaryId: req.params.militaryId });
 
@@ -618,7 +619,9 @@ app.post('/api/user/:militaryId/procedure', async (req, res) => {
       name: name || 'Unnamed Procedure',
       description: requirements || '',
       assignedDate: new Date(),
-      status: status || 'Pending',
+      status: normalizedStatus,
+      priority: priority || 'medium',
+      dueDate: dueDate ? new Date(dueDate) : null,
     };
 
     user.procedures.push(procedure);
@@ -633,6 +636,95 @@ app.post('/api/user/:militaryId/procedure', async (req, res) => {
     });
   } catch (error) {
     return res.status(500).json({ error: 'Failed to add procedure' });
+  }
+});
+
+// Update Procedure for User
+app.put('/api/user/:militaryId/procedure/:procedureIndex', async (req, res) => {
+  try {
+    if (!mongoConnected) {
+      return res.status(503).json({ error: 'Database unavailable' });
+    }
+
+    const user = await User.findOne({ militaryId: req.params.militaryId });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const index = parseInt(req.params.procedureIndex, 10);
+
+    if (index < 0 || index >= user.procedures.length) {
+      return res.status(400).json({ error: 'Invalid procedure index' });
+    }
+
+    const { name, requirements, status, priority, dueDate } = req.body;
+    const procedure = user.procedures[index];
+
+    if (name !== undefined) procedure.name = name;
+    if (requirements !== undefined) procedure.description = requirements;
+    if (status !== undefined) {
+      const normalizedUpdateStatus = status.toString().toLowerCase();
+      procedure.status = normalizedUpdateStatus;
+      if (normalizedUpdateStatus === 'completed') {
+        procedure.completionDate = new Date();
+      }
+    }
+    if (priority !== undefined) procedure.priority = priority;
+    if (dueDate !== undefined) procedure.dueDate = dueDate ? new Date(dueDate) : null;
+
+    user.procedures[index] = procedure;
+    await user.save();
+
+    return res.json({
+      success: true,
+      message: 'Procedure updated successfully',
+      procedure,
+    });
+  } catch (error) {
+    return res.status(500).json({ error: 'Failed to update procedure' });
+  }
+});
+
+// Update Procedure Status (User)
+app.patch('/api/user/:militaryId/procedure/:procedureIndex/status', async (req, res) => {
+  try {
+    if (!mongoConnected) {
+      return res.status(503).json({ error: 'Database unavailable' });
+    }
+
+    const user = await User.findOne({ militaryId: req.params.militaryId });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const index = parseInt(req.params.procedureIndex, 10);
+
+    if (index < 0 || index >= user.procedures.length) {
+      return res.status(400).json({ error: 'Invalid procedure index' });
+    }
+
+    const { status } = req.body;
+    if (!status) {
+      return res.status(400).json({ error: 'Status is required' });
+    }
+
+    const normalizedStatus = status.toString().toLowerCase();
+    user.procedures[index].status = normalizedStatus;
+    if (normalizedStatus === 'completed') {
+      user.procedures[index].completionDate = new Date();
+    }
+
+    await user.save();
+
+    return res.json({
+      success: true,
+      message: 'Procedure status updated successfully',
+      procedure: user.procedures[index],
+    });
+  } catch (error) {
+    return res.status(500).json({ error: 'Failed to update procedure status' });
   }
 });
 

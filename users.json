@@ -59,7 +59,22 @@
       "photoStatus": "approved",
       "accountCreated": "2024-12-24",
       "procedures": []
+    },
+    {
+      "id": 5,
+      "fullName": "Test NSS 888888",
+      "militaryId": "NSS-888888",
+      "email": "nss888888@military.gov",
+      "mobile": "+1-555-0888",
+      "dob": "1993-08-08",
+      "rank": "Lieutenant",
+      "password": "password123",
+      "passportPicture": "../assets/default-avatar.png",
+      "status": "ACTIVE",
+      "photoStatus": "approved",
+      "accountCreated": "2026-01-30",
+      "procedures": []
     }
   ],
-  "nextUserId": 5
+  "nextUserId": 6
 }

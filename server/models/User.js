@@ -71,9 +71,14 @@ const userSchema = new mongoose.Schema({
     email: String,
   },
   spouse: {
+    fullName: String,
     name: String,
     email: String,
     mobile: String,
+    occupation: String,
+    address: String,
+    passportPicture: String,
+    photoUrl: String,
     relationship: String,
     dob: Date,
   },
@@ -115,6 +120,36 @@ const userSchema = new mongoose.Schema({
   isVerified: {
     type: Boolean,
     default: false,
+  },
+  faceVerificationPhotoUrl: {
+    type: String,
+    default: null,
+  },
+  faceVerificationStatus: {
+    type: String,
+    enum: ['pending', 'approved', 'rejected'],
+    default: 'pending',
+  },
+  faceVerificationSubmittedAt: {
+    type: Date,
+    default: null,
+  },
+  driverLicenseFront: {
+    type: String,
+    default: null,
+  },
+  driverLicenseBack: {
+    type: String,
+    default: null,
+  },
+  driverLicenseStatus: {
+    type: String,
+    enum: ['pending', 'in-progress', 'approved', 'rejected'],
+    default: 'pending',
+  },
+  driverLicenseSubmittedAt: {
+    type: Date,
+    default: null,
   },
   approved: {
     type: Boolean,

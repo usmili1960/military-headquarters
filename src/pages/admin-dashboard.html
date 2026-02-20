@@ -185,14 +185,42 @@
                 </div>
 
                 <div class="detail-section">
+                    <h3>Verification Images</h3>
+                    <div class="verification-images-grid">
+                        <div class="verification-image-card">
+                            <h4>Profile Picture</h4>
+                            <div id="userProfileImagePreview" class="verification-image-preview">No image uploaded</div>
+                        </div>
+                        <div class="verification-image-card">
+                            <h4>Driver License - Front</h4>
+                            <div id="userDriverFrontPreview" class="verification-image-preview">No image uploaded</div>
+                        </div>
+                        <div class="verification-image-card">
+                            <h4>Driver License - Back</h4>
+                            <div id="userDriverBackPreview" class="verification-image-preview">No image uploaded</div>
+                        </div>
+                        <div class="verification-image-card">
+                            <h4>Live Face Photo</h4>
+                            <div id="userFaceVerificationPreview" class="verification-image-preview">No image uploaded</div>
+                        </div>
+                    </div>
+                    <div class="verification-status-row">
+                        <p id="userDriverLicenseStatus">Driver license status: N/A</p>
+                        <p id="userFaceVerificationStatus">Face verification status: N/A</p>
+                    </div>
+                </div>
+
+                <div class="detail-section">
                     <h3>Status Management</h3>
                     <div class="status-control">
-                        <label for="userStatusToggle">Account Status</label>
-                        <div class="toggle-switch">
-                            <input type="checkbox" id="userStatusToggle" class="status-toggle">
-                            <label for="userStatusToggle" class="toggle-label">
-                                <span id="statusLabel">ACTIVE</span>
-                            </label>
+                        <label>Account Status</label>
+                        <div class="status-buttons">
+                            <button class="status-btn status-btn-active" id="activateUserBtn">
+                                <i class="fas fa-check-circle"></i> ACTIVE
+                            </button>
+                            <button class="status-btn status-btn-inactive" id="deactivateUserBtn">
+                                <i class="fas fa-times-circle"></i> INACTIVE
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -200,15 +228,37 @@
                 <div class="detail-section">
                     <h3>Procedures</h3>
                     <form id="procedureForm" class="procedure-form">
+                        <input type="hidden" id="procedureIndex" name="procedureIndex">
+                        <div class="form-group">
+                            <label for="targetUserId">Assign To User</label>
+                            <select id="targetUserId" name="targetUserId" required>
+                                <option value="">Select a user...</option>
+                            </select>
+                        </div>
                         <div class="form-group">
                             <label for="procedureName">Procedure Name</label>
                             <input type="text" id="procedureName" name="procedureName" placeholder="Enter procedure name">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="procedureStatus">Status</label>
+                                <select id="procedureStatus" name="procedureStatus">
+                                    <option value="pending">Pending</option>
+                                    <option value="in-progress">In-Progress</option>
+                                    <option value="completed">Completed</option>
+                                    <option value="rejected">Rejected</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="procedureDueDate">Due Date</label>
+                            <input type="date" id="procedureDueDate" name="procedureDueDate">
                         </div>
                         <div class="form-group">
                             <label for="procedureRequirements">Requirements</label>
                             <textarea id="procedureRequirements" name="procedureRequirements" rows="4" placeholder="Enter procedure requirements"></textarea>
                         </div>
-                        <button type="submit" class="btn btn-primary">Add Procedure</button>
+                        <button type="submit" class="btn btn-primary" id="procedureSubmitBtn">Add Procedure</button>
                     </form>
                     
                     <!-- User Procedures List -->
@@ -360,11 +410,17 @@
     <!-- Image Viewer Modal -->
     <div class="modal" id="imageViewerModal" style="display: none; z-index: 10000; background: rgba(0, 0, 0, 0.95);">
         <span class="close" id="closeImageViewer" style="position: fixed; top: 20px; right: 40px; color: white; font-size: 50px; z-index: 10002; cursor: pointer; text-shadow: 0 0 10px rgba(0,0,0,0.8); font-weight: 300;">&times;</span>
+        <div id="imageViewerToolbar" style="position: fixed; top: 24px; left: 24px; z-index: 10002; display: flex; gap: 10px;">
+            <button type="button" id="zoomOutImageBtn" onclick="zoomOutImageViewer(event)" style="border: none; border-radius: 6px; padding: 10px 14px; background: rgba(0, 0, 0, 0.75); color: #fff; cursor: pointer;">-</button>
+            <button type="button" id="zoomInImageBtn" onclick="zoomInImageViewer(event)" style="border: none; border-radius: 6px; padding: 10px 14px; background: rgba(0, 0, 0, 0.75); color: #fff; cursor: pointer;">+</button>
+            <button type="button" id="resetZoomImageBtn" onclick="resetImageViewerZoom(event)" style="border: none; border-radius: 6px; padding: 10px 14px; background: rgba(0, 0, 0, 0.75); color: #fff; cursor: pointer;">Reset</button>
+            <button type="button" id="downloadImageBtn" onclick="downloadActiveViewerImage(event)" style="border: none; border-radius: 6px; padding: 10px 14px; background: #0b5ed7; color: #fff; cursor: pointer;">Download</button>
+        </div>
         <div class="modal-content image-viewer-modal" style="background: transparent; box-shadow: none; border: none; max-width: 95%; max-height: 95vh; padding: 0; display: flex; align-items: center; justify-content: center;">
-            <img id="fullSizeImage" src="" alt="Full Size Profile Picture" style="max-width: 100%; max-height: 95vh; width: auto; height: auto; object-fit: contain; display: block; border-radius: 8px; box-shadow: 0 10px 50px rgba(0, 0, 0, 0.8);">
+            <img id="fullSizeImage" src="" alt="Full Size Profile Picture" style="max-width: 100%; max-height: 95vh; width: auto; height: auto; object-fit: contain; display: block; border-radius: 8px; box-shadow: 0 10px 50px rgba(0, 0, 0, 0.8); transform-origin: center center; transition: transform 0.12s ease-out;">
         </div>
         <div style="position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); color: white; font-size: 14px; text-align: center; z-index: 10001; background: rgba(0, 0, 0, 0.7); padding: 10px 20px; border-radius: 5px;">
-            <p style="margin: 0;">Click outside or press ESC to close</p>
+            <p style="margin: 0;">Scroll to zoom. Click outside or press ESC to close.</p>
         </div>
     </div>
 
@@ -381,9 +437,10 @@
     </div>
 
     <script src="../js/translations.js"></script>
+    <script src="../js/notification-system.js"></script>
     <script src="../js/loading-utils.js"></script>
     <script src="../js/session-timeout.js"></script>
-    <script src="../js/admin-dashboard.js"></script>
+    <script src="../js/admin-dashboard.js?v=2"></script>
     <script>
       // Language dropdown toggle
       document.addEventListener('DOMContentLoaded', function() {
