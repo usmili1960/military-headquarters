@@ -29,9 +29,9 @@ const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'military-hq-secret-key-2026';
 
 // Smart MongoDB Connection - Try Atlas first, fallback to local
-const MONGODB_ATLAS_URI = process.env.MONGODB_ATLAS_URI;
+const MONGODB_ATLAS_URI = process.env.MONGODB_ATLAS_URI || process.env.MONGODB_URI;
 const MONGODB_LOCAL_URI = process.env.MONGODB_LOCAL_URI || 'mongodb://localhost:27017/military-hq';
-let MONGODB_URI = process.env.MONGODB_URI || MONGODB_LOCAL_URI;
+let MONGODB_URI = MONGODB_ATLAS_URI || MONGODB_LOCAL_URI;
 let connectionType = 'Unknown';
 
 // ========================================
@@ -54,7 +54,7 @@ const connectMongoDB = async () => {
   // First try: MongoDB Atlas (if configured)
   if (MONGODB_ATLAS_URI) {
     try {
-      console.log('🌐 Attempting MongoDB Atlas connection...');
+      console.log('🌐 Attempting primary MongoDB connection...');
       await mongoose.connect(MONGODB_ATLAS_URI, {
         useNewUrlParser: true,
         useUnifiedTopology: true,
@@ -62,9 +62,9 @@ const connectMongoDB = async () => {
         socketTimeoutMS: 45000,
       });
       mongoConnected = true;
-      connectionType = 'MongoDB Atlas (Global)';
+      connectionType = process.env.MONGODB_ATLAS_URI ? 'MongoDB Atlas (Global)' : 'MongoDB (MONGODB_URI)';
       MONGODB_URI = MONGODB_ATLAS_URI;
-      console.log('✅ MongoDB Atlas Connected Successfully');
+      console.log('✅ Primary MongoDB Connected Successfully');
       console.log(`📊 Database: ${mongoose.connection.db.databaseName} (Global Cloud)`);
       
       // Get last userId
@@ -77,8 +77,8 @@ const connectMongoDB = async () => {
       await createDefaultAdmin();
       return true;
     } catch (atlasError) {
-      console.log('⚠️ MongoDB Atlas connection failed, trying local MongoDB...');
-      console.log('Atlas Error:', atlasError.message);
+      console.log('⚠️ Primary MongoDB connection failed, trying local MongoDB...');
+      console.log('Primary DB Error:', atlasError.message);
     }
   }
 
