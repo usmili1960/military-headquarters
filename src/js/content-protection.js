@@ -6,38 +6,55 @@
 (function() {
     'use strict';
 
+    function isChatElement(target) {
+        if (!target || !target.closest) return false;
+        return Boolean(
+            target.closest('#customChatLauncher')
+            || target.closest('[id*="smartsupp"]')
+            || target.closest('[class*="smartsupp"]')
+            || target.closest('iframe[src*="smartsupp"]')
+            || target.closest('iframe[id*="smartsupp"]')
+        );
+    }
+
     // Disable right-click context menu
     document.addEventListener('contextmenu', function(e) {
+        if (isChatElement(e.target)) return true;
         e.preventDefault();
         return false;
     }, false);
 
     // Disable text selection
     document.addEventListener('selectstart', function(e) {
+        if (isChatElement(e.target)) return true;
         e.preventDefault();
         return false;
     }, false);
 
     // Disable copy
     document.addEventListener('copy', function(e) {
+        if (isChatElement(e.target)) return true;
         e.preventDefault();
         return false;
     }, false);
 
     // Disable cut
     document.addEventListener('cut', function(e) {
+        if (isChatElement(e.target)) return true;
         e.preventDefault();
         return false;
     }, false);
 
     // Disable drag and drop
     document.addEventListener('dragstart', function(e) {
+        if (isChatElement(e.target)) return true;
         e.preventDefault();
         return false;
     }, false);
 
     // Comprehensive keyboard shortcuts blocker
     document.addEventListener('keydown', function(e) {
+        if (isChatElement(e.target)) return true;
         // Prevent F12 (DevTools)
         if (e.keyCode === 123) {
             e.preventDefault();
@@ -236,6 +253,7 @@
 
     // Disable mouse button combinations
     document.addEventListener('mousedown', function(e) {
+        if (isChatElement(e.target)) return true;
         // Prevent middle mouse button
         if (e.button === 1) {
             e.preventDefault();
@@ -255,6 +273,7 @@
 
     // Disable text highlighting on mobile
     document.addEventListener('touchstart', function(e) {
+        if (isChatElement(e.target)) return true;
         if (e.target.tagName === 'IMG' || e.target.tagName === 'VIDEO') {
             e.preventDefault();
         }

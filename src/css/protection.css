@@ -37,6 +37,16 @@ img {
     cursor: default !important;
 }
 
+/* Keep chatbot interactive even with protection rules */
+#customChatLauncher,
+#customChatLauncher *,
+[id*="smartsupp"],
+[class*="smartsupp"],
+iframe[src*="smartsupp"],
+iframe[id*="smartsupp"] {
+    pointer-events: auto !important;
+}
+
 /* Prevent video controls manipulation */
 video {
     -webkit-user-select: none !important;
