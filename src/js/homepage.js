@@ -58,6 +58,8 @@ function initializeModals() {
   const closeSignupModal = document.getElementById('closeSignupModal');
   const closeVerificationModal = document.getElementById('closeVerificationModal');
   const closeForgotPasswordModal = document.getElementById('closeForgotPasswordModal');
+  const branchModal = document.getElementById('branchModal');
+  const closeBranchModal = document.getElementById('closeBranchModal');
 
   // Check if elements exist
   if (!loginBtn) {
@@ -120,6 +122,10 @@ function initializeModals() {
       forgotPasswordModal.classList.remove('show');
       forgotPasswordModal.style.display = 'none';
     }
+    if (e.target === branchModal) {
+      branchModal.classList.remove('show');
+      branchModal.style.display = 'none';
+    }
   });
 
   // User Signup
@@ -156,6 +162,22 @@ function initializeModals() {
       forgotPasswordModal.style.display = 'none';
     });
   }
+
+  if (closeBranchModal && branchModal) {
+    closeBranchModal.addEventListener('click', () => {
+      branchModal.classList.remove('show');
+      branchModal.style.display = 'none';
+    });
+  }
+
+  document.querySelectorAll('[data-branch]').forEach((element) => {
+    element.addEventListener('click', () => {
+      const branch = element.getAttribute('data-branch');
+      if (branch && typeof window.showBranchInfo === 'function') {
+        window.showBranchInfo(branch);
+      }
+    });
+  });
 
   // User Signup Form Submit
   if (userSignupForm) {
@@ -1081,7 +1103,8 @@ window.currentBranchInModal = null;
 
 function showBranchInfo(branch) {
   console.log('✅ Branch clicked:', branch);
-  const t = translations[currentLanguage];
+  const languageMap = (typeof translations === 'object' && translations) || {};
+  const t = languageMap[currentLanguage] || languageMap.en || {};
   const branchData = {
     army: {
       name: t['branches.army.name'] || 'United States Army',
@@ -1134,11 +1157,8 @@ function showBranchInfo(branch) {
   };
 
   const info = branchData[branch];
-  const modal = document.getElementById('branchModal');
-  const content = document.getElementById('branchInfo');
-
-  if (!modal || !content) {
-    console.error('❌ Branch modal or content not found');
+  if (!info) {
+    console.error('❌ Unknown branch:', branch);
     return;
   }
 
@@ -1146,15 +1166,15 @@ function showBranchInfo(branch) {
   const headquarters = t['branches.dialog.headquarters'] || 'Headquarters';
   const personnel = t['branches.dialog.personnel'] || 'Personnel';
   const mission = t['branches.dialog.mission'] || 'Mission';
-
-  content.innerHTML = `
+  const introYear = info.founded.includes(',') ? info.founded.split(',').pop().trim() : info.founded;
+  const detailsHtml = `
         <div class="branch-detail-container">
             <h2 style="color: #003366; margin-bottom: 20px; font-size: 28px;">${info.name}</h2>
             <div class="branch-introduction" style="background: #f0f4f8; padding: 15px; border-left: 4px solid #0066cc; margin-bottom: 20px; border-radius: 4px;">
                 <p style="margin: 0; font-size: 14px; line-height: 1.8; color: #333;">
-                    The ${info.name} is one of the six branches of the United States Armed Forces. 
-                    Established in ${info.founded.split(',')[1] || info.founded}, it has been instrumental in 
-                    protecting the nation and maintaining peace and security globally. With the motto 
+                    The ${info.name} is one of the six branches of the United States Armed Forces.
+                    Established in ${introYear}, it has been instrumental in
+                    protecting the nation and maintaining peace and security globally. With the motto
                     "<em>${info.motto}</em>", this branch continues to uphold its values and commitment to excellence.
                 </p>
             </div>
@@ -1184,6 +1204,32 @@ function showBranchInfo(branch) {
             </div>
         </div>
     `;
+
+  // Always render branch info inline as a reliable fallback.
+  let preview = document.getElementById('branchInfoPreview');
+  if (!preview) {
+    const section = document.querySelector('.military-branches-section');
+    if (section) {
+      preview = document.createElement('div');
+      preview.id = 'branchInfoPreview';
+      preview.className = 'branch-inline-info';
+      section.appendChild(preview);
+    }
+  }
+  if (preview) {
+    preview.innerHTML = detailsHtml;
+    preview.classList.add('show');
+  }
+
+  const modal = document.getElementById('branchModal');
+  const content = document.getElementById('branchInfo');
+
+  if (!modal || !content) {
+    console.warn('⚠️ Branch modal or content not found, inline preview rendered instead');
+    return;
+  }
+
+  content.innerHTML = detailsHtml;
 
   // Store current branch for re-rendering on language change
   window.currentBranchInModal = branch;

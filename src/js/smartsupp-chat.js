@@ -1,52 +1,45 @@
 /* global window, document */
 
 (function initSmartsuppChat() {
-  const SMARTSUPP_KEY = 'd1f1f8a7ed23b3a149255ff1dd33907b4d29f5a9';
+  const SMARTSUPP_KEY = 'd91c375b9432e4e9a251b37d755858e5f2f4b247';
   const CUSTOM_LAUNCHER_ID = 'customChatLauncher';
-  let openRequested = false;
+  let hideNativeIntervalId;
 
-  function isSmartsuppElement(element) {
-    if (!element || !element.closest) return false;
-    return Boolean(
-      element.closest('#customChatLauncher')
-      || element.closest('[id*="smartsupp"]')
-      || element.closest('[class*="smartsupp"]')
-      || element.closest('iframe[src*="smartsupp"]')
-      || element.closest('iframe[id*="smartsupp"]')
-    );
-  }
-
-  function tryClickSmartsuppFallback() {
-    const selector = [
-      'iframe[src*="smartsupp"]',
+  function hideNativeLauncher() {
+    const directSelectors = [
       '[id*="smartsupp"][role="button"]',
       '[class*="smartsupp"][role="button"]',
       '[id*="smartsupp"] button',
       '[class*="smartsupp"] button',
-    ].join(', ');
+      '[class*="smartsupp-widget__button"]',
+    ];
 
-    const target = document.querySelector(selector);
-    if (!target) return false;
+    document.querySelectorAll(directSelectors.join(', ')).forEach((el) => {
+      el.style.setProperty('display', 'none', 'important');
+      el.style.setProperty('visibility', 'hidden', 'important');
+      el.style.setProperty('opacity', '0', 'important');
+      el.style.setProperty('pointer-events', 'none', 'important');
+    });
 
-    target.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
-    return true;
+    // Smartsupp often renders launcher as a small fixed iframe.
+    document.querySelectorAll('iframe[src*="smartsupp"]').forEach((frame) => {
+      const rect = frame.getBoundingClientRect();
+      if (rect.width <= 140 && rect.height <= 140) {
+        frame.style.setProperty('display', 'none', 'important');
+        frame.style.setProperty('visibility', 'hidden', 'important');
+        frame.style.setProperty('opacity', '0', 'important');
+        frame.style.setProperty('pointer-events', 'none', 'important');
+      }
+    });
   }
 
   function openChatWidget() {
-    openRequested = true;
-
-    if (typeof window.smartsupp === 'function') {
-      try {
-        window.smartsupp('chat:open');
-        window.smartsupp('chat:show');
-        openRequested = false;
-        return;
-      } catch (error) {
-        // Keep fallback behavior if API command differs by widget version.
-      }
-    }
-
-    tryClickSmartsuppFallback();
+    // Keep native launcher hidden and open the chat from the custom button.
+    hideNativeLauncher();
+    window.smartsupp('chat:hide');
+    window.smartsupp('chat:open');
+    setTimeout(hideNativeLauncher, 250);
+    setTimeout(hideNativeLauncher, 900);
   }
 
   function createCustomLauncher() {
@@ -60,14 +53,26 @@
     launcher.setAttribute('aria-label', 'Open chat support');
     launcher.addEventListener('click', openChatWidget);
     document.body.appendChild(launcher);
+
+    hideNativeLauncher();
+    if (!hideNativeIntervalId) {
+      hideNativeIntervalId = window.setInterval(hideNativeLauncher, 1000);
+    }
   }
 
   window._smartsupp = window._smartsupp || {};
   window._smartsupp.key = SMARTSUPP_KEY;
-
-  if (window.smartsupp) return;
+  window._smartsupp.hideWidget = true;
+  window.smartsupp = window.smartsupp || (function initQueue() {
+    const queueFn = function smartsuppQueue() {
+      queueFn._.push(arguments);
+    };
+    queueFn._ = [];
+    return queueFn;
+  }());
 
   (function loadSmartsuppScript(d) {
+    if (d.querySelector('script[src*="smartsuppchat.com/loader.js"]')) return;
     const scriptTag = d.getElementsByTagName('script')[0];
     const loaderScript = d.createElement('script');
     loaderScript.type = 'text/javascript';
@@ -75,9 +80,8 @@
     loaderScript.async = true;
     loaderScript.src = 'https://www.smartsuppchat.com/loader.js?';
     loaderScript.onload = () => {
-      if (openRequested) {
-        setTimeout(openChatWidget, 200);
-      }
+      hideNativeLauncher();
+      window.smartsupp('chat:hide');
     };
     if (scriptTag && scriptTag.parentNode) {
       scriptTag.parentNode.insertBefore(loaderScript, scriptTag);
@@ -85,18 +89,6 @@
       d.head.appendChild(loaderScript);
     }
   }(document));
-
-  // If widget UI appears after load, honor any pending open request.
-  const observer = new MutationObserver((mutations) => {
-    if (!openRequested) return;
-    const hasSmartsuppNode = mutations.some((mutation) => Array.from(mutation.addedNodes || []).some((node) => (
-      node.nodeType === 1 && isSmartsuppElement(node)
-    )));
-    if (hasSmartsuppNode) {
-      setTimeout(openChatWidget, 100);
-    }
-  });
-  observer.observe(document.documentElement, { childList: true, subtree: true });
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', createCustomLauncher);

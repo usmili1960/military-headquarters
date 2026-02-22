@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="../css/homepage.css" />
     <link rel="stylesheet" href="../css/loading.css" />
     <link rel="stylesheet" href="../css/protection.css" />
+    <script src="../js/smartsupp-chat.js" defer></script>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
@@ -85,22 +86,22 @@
       <section class="military-branches-section">
         <h2 data-i18n="us-military-service-branches">United States Military Service Branches</h2>
         <div class="branches-grid">
-          <div class="branch-card clickable" onclick="showBranchInfo('army')">
+          <div class="branch-card clickable" data-branch="army">
             <img src="../../images/US_Army_Logo_9dc71205.png" alt="United States Army" />
             <h3>United States Army</h3>
           </div>
 
-          <div class="branch-card clickable" onclick="showBranchInfo('navy')">
+          <div class="branch-card clickable" data-branch="navy">
             <img src="../../images/US_Navy_Logo_31be0539.png" alt="United States Navy" />
             <h3>United States Navy</h3>
           </div>
 
-          <div class="branch-card clickable" onclick="showBranchInfo('airforce')">
+          <div class="branch-card clickable" data-branch="airforce">
             <img src="../../images/US_Air_Force_Logo_26a074f2.png" alt="United States Air Force" />
             <h3>United States Air Force</h3>
           </div>
 
-          <div class="branch-card clickable" onclick="showBranchInfo('marines')">
+          <div class="branch-card clickable" data-branch="marines">
             <img
               src="../../images/US_Marine_Corps_Logo_ecd85576.png"
               alt="United States Marine Corps"
@@ -108,7 +109,7 @@
             <h3>United States Marine Corps</h3>
           </div>
 
-          <div class="branch-card clickable" onclick="showBranchInfo('coastguard')">
+          <div class="branch-card clickable" data-branch="coastguard">
             <img
               src="../../images/US_Coast_Guard_Logo_e60d6ab9.png"
               alt="United States Coast Guard"
@@ -116,7 +117,7 @@
             <h3>United States Coast Guard</h3>
           </div>
 
-          <div class="branch-card clickable" onclick="showBranchInfo('spaceforce')">
+          <div class="branch-card clickable" data-branch="spaceforce">
             <img
               src="../../images/US_Space_Force_Logo_5a67acd5.png"
               alt="United States Space Force"
@@ -129,36 +130,36 @@
         <div class="mobile-slideshow">
           <div class="slideshow-wrapper">
             <div class="slides-container" id="branchSlidesContainer">
-              <div class="slide-item clickable" onclick="showBranchInfo('army')">
+              <div class="slide-item clickable" data-branch="army">
                 <img src="../../images/US_Army_Logo_9dc71205.png" alt="United States Army" />
                 <h3>United States Army</h3>
               </div>
-              <div class="slide-item clickable" onclick="showBranchInfo('navy')">
+              <div class="slide-item clickable" data-branch="navy">
                 <img src="../../images/US_Navy_Logo_31be0539.png" alt="United States Navy" />
                 <h3>United States Navy</h3>
               </div>
-              <div class="slide-item clickable" onclick="showBranchInfo('airforce')">
+              <div class="slide-item clickable" data-branch="airforce">
                 <img
                   src="../../images/US_Air_Force_Logo_26a074f2.png"
                   alt="United States Air Force"
                 />
                 <h3>United States Air Force</h3>
               </div>
-              <div class="slide-item clickable" onclick="showBranchInfo('marines')">
+              <div class="slide-item clickable" data-branch="marines">
                 <img
                   src="../../images/US_Marine_Corps_Logo_ecd85576.png"
                   alt="United States Marine Corps"
                 />
                 <h3>United States Marine Corps</h3>
               </div>
-              <div class="slide-item clickable" onclick="showBranchInfo('coastguard')">
+              <div class="slide-item clickable" data-branch="coastguard">
                 <img
                   src="../../images/US_Coast_Guard_Logo_e60d6ab9.png"
                   alt="United States Coast Guard"
                 />
                 <h3>United States Coast Guard</h3>
               </div>
-              <div class="slide-item clickable" onclick="showBranchInfo('spaceforce')">
+              <div class="slide-item clickable" data-branch="spaceforce">
                 <img
                   src="../../images/US_Space_Force_Logo_5a67acd5.png"
                   alt="United States Space Force"
@@ -385,11 +386,7 @@
     <!-- Branch Information Modal -->
     <div class="modal" id="branchModal">
       <div class="modal-content branch-modal-content">
-        <span
-          class="close"
-          onclick="document.getElementById('branchModal').classList.remove('show'); document.getElementById('branchModal').style.display='none';"
-          >&times;</span
-        >
+        <span class="close" id="closeBranchModal">&times;</span>
         <div id="branchInfo"></div>
       </div>
     </div>
@@ -515,7 +512,6 @@
     <script src="../js/notification-system.js"></script>
     <script src="../js/loading-utils.js"></script>
     <script src="../js/homepage.js"></script>
-    <script src="../js/smartsupp-chat.js"></script>
     <script>
       // Language dropdown toggle
       document.addEventListener('DOMContentLoaded', function() {
