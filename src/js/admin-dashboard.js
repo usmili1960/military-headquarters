@@ -549,6 +549,43 @@ function renderVerificationImageSection(user) {
   }
 }
 
+function formatDateForDisplay(dateValue) {
+  if (!dateValue) return 'N/A';
+
+  if (typeof dateValue === 'string') {
+    const dateOnlyMatch = dateValue.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (dateOnlyMatch) {
+      const year = Number(dateOnlyMatch[1]);
+      const month = Number(dateOnlyMatch[2]) - 1;
+      const day = Number(dateOnlyMatch[3]);
+      return new Date(year, month, day).toLocaleDateString();
+    }
+  }
+
+  const parsedDate = new Date(dateValue);
+  if (Number.isNaN(parsedDate.getTime())) return 'N/A';
+  return parsedDate.toLocaleDateString();
+}
+
+function formatDateForInput(dateValue) {
+  if (!dateValue) return '';
+
+  if (typeof dateValue === 'string') {
+    const dateMatch = dateValue.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (dateMatch) {
+      return `${dateMatch[1]}-${dateMatch[2]}-${dateMatch[3]}`;
+    }
+  }
+
+  const parsedDate = new Date(dateValue);
+  if (Number.isNaN(parsedDate.getTime())) return '';
+
+  const year = parsedDate.getFullYear();
+  const month = String(parsedDate.getMonth() + 1).padStart(2, '0');
+  const day = String(parsedDate.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 // Display user procedures in the modal
 function displayUserProcedures(user) {
   const proceduresContainer = document.getElementById('proceduresContainer');
@@ -570,7 +607,7 @@ function displayUserProcedures(user) {
                 <div class="procedure-item-name">${proc.name}</div>
                 <div class="procedure-item-requirements">${proc.description || proc.requirements || ''}</div>
                 <div style="color: #666; font-size: 12px; margin-top: 6px;">
-                    Status: ${formatStatus(proc.status)} · Due: ${proc.dueDate ? new Date(proc.dueDate).toLocaleDateString() : 'N/A'}
+                    Status: ${formatStatus(proc.status)} · Updated: ${formatDateForDisplay(proc.dateUpdated || proc.assignedDate)} · Due: ${formatDateForDisplay(proc.dueDate)}
                 </div>
             </div>
             <div class="procedure-actions">
@@ -611,7 +648,8 @@ function editProcedure(militaryId, procedureIndex) {
   document.getElementById('procedureName').value = proc.name || '';
   document.getElementById('procedureRequirements').value = proc.description || proc.requirements || '';
   document.getElementById('procedureStatus').value = (proc.status || 'pending').toLowerCase();
-  document.getElementById('procedureDueDate').value = proc.dueDate ? new Date(proc.dueDate).toISOString().slice(0, 10) : '';
+  document.getElementById('procedureDueDate').value = formatDateForInput(proc.dueDate);
+  document.getElementById('procedureDateUpdated').value = formatDateForInput(proc.dateUpdated || proc.assignedDate);
   document.getElementById('procedureIndex').value = procedureIndex;
   document.getElementById('procedureSubmitBtn').textContent = 'Update Procedure';
 
@@ -860,6 +898,7 @@ procedureForm.addEventListener('submit', (e) => {
   const procedureRequirements = document.getElementById('procedureRequirements').value;
   const procedureStatus = document.getElementById('procedureStatus').value || 'pending';
   const procedureDueDate = document.getElementById('procedureDueDate').value || '';
+  const procedureDateUpdated = document.getElementById('procedureDateUpdated').value || '';
   const procedureIndex = document.getElementById('procedureIndex').value;
 
   if (!targetUserId) {
@@ -895,6 +934,7 @@ procedureForm.addEventListener('submit', (e) => {
         description: procedureRequirements,
         status: procedureStatus,
         dueDate: procedureDueDate || null,
+        dateUpdated: procedureDateUpdated || null,
       };
     }
   } else {
@@ -905,6 +945,7 @@ procedureForm.addEventListener('submit', (e) => {
       assignedDate: new Date(),
       status: procedureStatus,
       dueDate: procedureDueDate || null,
+      dateUpdated: procedureDateUpdated || new Date(),
     });
   }
 
@@ -939,6 +980,7 @@ procedureForm.addEventListener('submit', (e) => {
       requirements: procedureRequirements,
       status: procedureStatus,
       dueDate: procedureDueDate || null,
+      dateUpdated: procedureDateUpdated || null,
     }),
   })
     .then((response) => response.json())
@@ -1220,6 +1262,7 @@ function openProcedureForm(user) {
   document.getElementById('procUserName').value = user.fullName;
   document.getElementById('adminProcedureForm')?.reset();
   document.getElementById('procUserName').value = user.fullName;
+  document.getElementById('procDateUpdated').value = formatDateForInput(new Date());
 }
 
 document.getElementById('procedureUserSearch')?.addEventListener('input', (e) => {
@@ -1275,6 +1318,8 @@ adminProcedureForm?.addEventListener('submit', async (e) => {
     name: document.getElementById('procProcedureName').value.trim(),
     requirements: document.getElementById('procRequirements').value.trim(),
     status: statusMap[rawStatus] || 'pending',
+    dueDate: document.getElementById('procDueDate').value || null,
+    dateUpdated: document.getElementById('procDateUpdated').value || null,
   };
 
   try {

@@ -100,6 +100,7 @@ const userSchema = new mongoose.Schema({
     name: String,
     description: String,
     assignedDate: Date,
+    dateUpdated: Date,
     dueDate: Date,
     completionDate: Date,
     status: {

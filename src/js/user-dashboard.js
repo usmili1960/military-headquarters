@@ -281,6 +281,24 @@ async function loadUserProfile() {
 }
 
 // Load procedures - Declare before usage
+function formatProcedureDate(dateValue) {
+  if (!dateValue) return 'N/A';
+
+  if (typeof dateValue === 'string') {
+    const dateOnlyMatch = dateValue.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (dateOnlyMatch) {
+      const year = Number(dateOnlyMatch[1]);
+      const month = Number(dateOnlyMatch[2]) - 1;
+      const day = Number(dateOnlyMatch[3]);
+      return new Date(year, month, day).toLocaleDateString();
+    }
+  }
+
+  const parsedDate = new Date(dateValue);
+  if (Number.isNaN(parsedDate.getTime())) return 'N/A';
+  return parsedDate.toLocaleDateString();
+}
+
 function loadProcedures() {
   const tbody = document.getElementById('proceduresTableBody');
   if (!tbody) {
@@ -293,36 +311,27 @@ function loadProcedures() {
   if (currentUser && currentUser.procedures && currentUser.procedures.length > 0) {
     console.log('📋 Loading procedures:', currentUser.procedures.length);
     
-    currentUser.procedures.forEach((proc, index) => {
+    currentUser.procedures.forEach((proc) => {
       const row = document.createElement('tr');
       
       // Format date if available
       let dateFormatted = 'N/A';
-      if (proc.assignedDate) {
-        try {
-          dateFormatted = new Date(proc.assignedDate).toLocaleDateString();
-        } catch (e) {
-          dateFormatted = proc.assignedDate;
-        }
+      if (proc.dateUpdated || proc.assignedDate) {
+        dateFormatted = formatProcedureDate(proc.dateUpdated || proc.assignedDate);
       }
 
       // Use description field from server and handle status
       const statusValue = (proc.status || 'pending').toString().toLowerCase();
       const statusLabel = statusValue === 'in-progress' ? 'In-Progress' : (statusValue.charAt(0).toUpperCase() + statusValue.slice(1));
       const statusBadge = `<span class="badge status-badge-${statusValue}">${statusLabel}</span>`;
-      const dueDateFormatted = proc.dueDate ? new Date(proc.dueDate).toLocaleDateString() : 'N/A';
-      const canComplete = statusValue !== 'completed' && statusValue !== 'rejected';
-      const actionButton = canComplete
-        ? `<button class="btn btn-primary procedure-complete-btn" data-index="${index}">Mark Completed</button>`
-        : '<span style="color: #999;">-</span>';
-
+      const dueDateFormatted = formatProcedureDate(proc.dueDate);
       row.innerHTML = `
         <td>${proc.name || 'N/A'}</td>
         <td>${statusBadge}</td>
         <td>${proc.description || proc.requirements || 'N/A'}</td>
         <td>${dateFormatted}</td>
         <td>${dueDateFormatted}</td>
-        <td>${actionButton}</td>
+        <td><span style="color: #999;">-</span></td>
       `;
       tbody.appendChild(row);
     });
@@ -333,35 +342,6 @@ function loadProcedures() {
   }
 
   console.log('✅ Procedures loaded:', currentUser?.procedures?.length || 0);
-}
-
-// Update procedure status (user action)
-async function updateProcedureStatus(procedureIndex, status) {
-  if (!currentUser || !currentUser.militaryId) return;
-  try {
-    const response = await fetch(`${API_BASE}/api/user/${currentUser.militaryId}/procedure/${procedureIndex}/status`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ status }),
-    });
-
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.error || 'Failed to update procedure status');
-    }
-
-    // Update local data and refresh table
-    if (currentUser.procedures && currentUser.procedures[procedureIndex]) {
-      currentUser.procedures[procedureIndex].status = status;
-    }
-    loadProcedures();
-    showNotification('Procedure status updated successfully', 'success');
-  } catch (error) {
-    console.error('❌ Error updating procedure status:', error);
-    showNotification('Failed to update procedure status. Please try again.', 'error');
-  }
 }
 
 // Attach event listeners - Declare before usage
@@ -622,17 +602,6 @@ function attachEventListeners() {
     });
   }
 
-  // Procedure status actions (user)
-  const proceduresTableBody = document.getElementById('proceduresTableBody');
-  if (proceduresTableBody) {
-    proceduresTableBody.addEventListener('click', (e) => {
-      const button = e.target.closest('.procedure-complete-btn');
-      if (!button) return;
-      const index = button.getAttribute('data-index');
-      if (index === null || index === undefined) return;
-      updateProcedureStatus(parseInt(index, 10), 'completed');
-    });
-  }
 }
 
 // Initialize DOM elements after page loads

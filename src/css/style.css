@@ -28,6 +28,49 @@ body {
     display: none !important;
 }
 
+/* Custom Smartsupp launcher */
+.custom-chat-launcher {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 10050;
+    border: none;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #0a4da3, #0e6ad6);
+    color: #fff;
+    padding: 12px 18px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 0.3px;
+    cursor: pointer;
+    box-shadow: 0 12px 30px rgba(0, 38, 89, 0.35);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+.custom-chat-launcher:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 34px rgba(0, 38, 89, 0.45);
+    filter: brightness(1.05);
+}
+
+.custom-chat-launcher:active {
+    transform: translateY(0);
+}
+
+.custom-chat-launcher__icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(255, 255, 255, 0.2);
+    font-size: 14px;
+}
+
 /* Header Styles */
 .header, .user-header, .admin-header {
     display: flex;
@@ -55,8 +98,10 @@ body {
     height: 80px;
     border-radius: 50%;
     background-color: var(--white);
-    padding: 8px;
-    object-fit: contain;
+    padding: 0;
+    object-fit: cover;
+    display: block;
+    overflow: hidden;
 }
 
 .main-title {
@@ -690,6 +735,19 @@ body {
 
 /* Responsive Design */
 @media (max-width: 768px) {
+    .custom-chat-launcher {
+        right: 14px;
+        bottom: 14px;
+        padding: 10px 14px;
+        font-size: 13px;
+    }
+
+    .custom-chat-launcher__icon {
+        width: 24px;
+        height: 24px;
+        font-size: 12px;
+    }
+
     .header, .user-header, .admin-header {
         padding: 12px 15px;
         gap: 0;
@@ -805,6 +863,20 @@ body {
 }
 
 @media (max-width: 480px) {
+    .custom-chat-launcher {
+        right: 12px;
+        bottom: 12px;
+        padding: 9px 12px;
+        gap: 8px;
+        font-size: 12px;
+    }
+
+    .custom-chat-launcher__icon {
+        width: 22px;
+        height: 22px;
+        font-size: 11px;
+    }
+
     .header, .user-header, .admin-header {
         padding: 10px 12px;
         gap: 0;

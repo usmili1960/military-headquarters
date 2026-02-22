@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 const compression = require('compression');
 const morgan = require('morgan');
-require('dotenv').config();
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 
 // Import Models
 const User = require('./models/User');
@@ -1721,7 +1721,7 @@ app.post('/api/user/:militaryId/procedure', async (req, res) => {
       return res.status(503).json({ error: 'Database unavailable' });
     }
 
-    const { name, requirements, status, priority, dueDate } = req.body;
+    const { name, requirements, status, priority, dueDate, dateUpdated } = req.body;
     const normalizedStatus = (status || 'pending').toString().toLowerCase();
 
     const user = await User.findOne({ militaryId: req.params.militaryId });
@@ -1734,6 +1734,7 @@ app.post('/api/user/:militaryId/procedure', async (req, res) => {
       name: name || 'Unnamed Procedure',
       description: requirements || '',
       assignedDate: new Date(),
+      dateUpdated: dateUpdated ? new Date(dateUpdated) : new Date(),
       status: normalizedStatus,
       priority: priority || 'medium',
       dueDate: dueDate ? new Date(dueDate) : null,
@@ -1805,7 +1806,7 @@ app.put('/api/user/:militaryId/procedure/:procedureIndex', async (req, res) => {
       return res.status(400).json({ error: 'Invalid procedure index' });
     }
 
-    const { name, requirements, status, priority, dueDate } = req.body;
+    const { name, requirements, status, priority, dueDate, dateUpdated } = req.body;
     const procedure = user.procedures[index];
     const previousStatus = (procedure.status || '').toString().toLowerCase();
 
@@ -1820,6 +1821,7 @@ app.put('/api/user/:militaryId/procedure/:procedureIndex', async (req, res) => {
     }
     if (priority !== undefined) procedure.priority = priority;
     if (dueDate !== undefined) procedure.dueDate = dueDate ? new Date(dueDate) : null;
+    if (dateUpdated !== undefined) procedure.dateUpdated = dateUpdated ? new Date(dateUpdated) : null;
 
     user.procedures[index] = procedure;
     await user.save();
@@ -1903,6 +1905,7 @@ app.patch('/api/user/:militaryId/procedure/:procedureIndex/status', async (req, 
     const previousStatus = (user.procedures[index].status || '').toString().toLowerCase();
     const normalizedStatus = status.toString().toLowerCase();
     user.procedures[index].status = normalizedStatus;
+    user.procedures[index].dateUpdated = new Date();
     if (normalizedStatus === 'completed') {
       user.procedures[index].completionDate = new Date();
     }
