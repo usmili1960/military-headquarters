@@ -40,10 +40,10 @@ img {
 /* Keep chatbot interactive even with protection rules */
 #customChatLauncher,
 #customChatLauncher *,
-[id*="smartsupp"],
-[class*="smartsupp"],
-iframe[src*="smartsupp"],
-iframe[id*="smartsupp"] {
+[id*="tawk"],
+[class*="tawk"],
+iframe[src*="tawk.to"],
+iframe[id*="tawk"] {
     pointer-events: auto !important;
 }
 

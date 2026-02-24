@@ -10,10 +10,10 @@
         if (!target || !target.closest) return false;
         return Boolean(
             target.closest('#customChatLauncher')
-            || target.closest('[id*="smartsupp"]')
-            || target.closest('[class*="smartsupp"]')
-            || target.closest('iframe[src*="smartsupp"]')
-            || target.closest('iframe[id*="smartsupp"]')
+            || target.closest('[id*="tawk"]')
+            || target.closest('[class*="tawk"]')
+            || target.closest('iframe[src*="tawk.to"]')
+            || target.closest('iframe[id*="tawk"]')
         );
     }
 
